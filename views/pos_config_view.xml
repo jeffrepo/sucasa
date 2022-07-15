@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sucasa_pos_config_view_form" model="ir.ui.view">
+        <field name="name">sucasa.pos.config.form.viewt</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <sheet position="inside">
+                <h2>RED +</h2>
+                <button string="Regitrar Token" name="register_pos_token" type="object" class="oe_highlight"/>
+
+                <div class="row mt16 o_settings_container" id="posbox_reference">
+
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <!-- <div class="o_setting_left_pane">
+                            <field name="clientid"/>
+                        </div> -->
+                        <div class="o_setting_right_pane">
+                            <label for="clientid" string="Identificador de cliente"/>
+                            <field name="clientid"/>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <!-- <div class="o_setting_left_pane">
+                            <field name="clerkcode"/>
+                        </div> -->
+                        <div class="o_setting_right_pane">
+                            <label for="clerkcode" string="Identificador de cajero"/>
+                            <field name="clerkcode"/>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <!-- <div class="o_setting_left_pane">
+                            <field name="storeid"/>
+                        </div> -->
+                        <div class="o_setting_right_pane">
+                            <label for="storeid" string="Identificador de sucursal"/>
+                            <field name="storeid"/>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <!-- <div class="o_setting_left_pane">
+                            <field name="posid"/>
+                        </div> -->
+                        <div class="o_setting_right_pane">
+                            <label for="posid" string="Identificador de caja"/>
+                            <field name="posid"/>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <!-- <div class="o_setting_left_pane">
+                            <field name="postoken"/>
+                        </div> -->
+                        <div class="o_setting_right_pane">
+                            <label for="postoken" string="Token"/>
+                            <field name="postoken"/>
+                        </div>
+                    </div>
+                  </div>
+            </sheet>
+        </field>
+    </record>
+
+</odoo>

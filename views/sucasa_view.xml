@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <menuitem id="menu_pos_sucasa"
+      name="Red +"
+      parent="point_of_sale.menu_point_root"
+      sequence="10"/>
+
+
+      <record id="view_sucasa_carrier_search" model="ir.ui.view">
+          <field name="name">sucasa.carrier.search.view</field>
+          <field name="model">sucasa.carrier</field>
+          <field name="arch" type="xml">
+              <search string="Carriers">
+                  <field name="name"/>
+                  <field name="CarrierId" />
+              </search>
+          </field>
+      </record>
+
+      <record id="action_pos_sucasa_carrier" model="ir.actions.act_window">
+          <field name="name">Carriers</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">sucasa.carrier</field>
+          <field name="view_mode">tree,form</field>
+          <field name="search_view_id" ref="view_sucasa_carrier_search" />
+      </record>
+
+
+      <record id="action_sucasa_carrier" model="ir.actions.act_window">
+          <field name="name">Carriers</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">sucasa.carrier</field>
+          <field name="view_mode">tree</field>
+          <field name="domain"></field>
+          <field name="search_view_id" ref="view_sucasa_carrier_search" />
+          <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                  Carriers
+              </p><p>
+                  Create a new carrier
+              </p>
+          </field>
+      </record>
+
+      <menuitem id="menu_pos_sucasa_carriers"
+          action="sucasa.action_sucasa_carrier"
+          parent="sucasa.menu_pos_sucasa"
+          sequence="1"/>
+</odoo>
