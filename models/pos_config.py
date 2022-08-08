@@ -275,6 +275,8 @@ class PosConfig(models.Model):
                                                     response_code = new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]["GetSessionResult"]["ResponseCode"]
                                                     if int(response_code) == 000:
                                                         data = new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]["GetSessionResult"]
+                                                    else:
+                                                        raise UserError(new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]["GetSessionResult"]["ResponseMessage"])
 
                                     if method == 'RegisterPosTokenResponse':
                                         if "RegisterPosTokenResponse" in new_json["soap:Envelope"]["soap:Body"]:

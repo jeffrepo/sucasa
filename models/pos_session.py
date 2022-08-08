@@ -9,13 +9,17 @@ class PosSession(models.Model):
 
     sessionid = fields.Char('SessionId')
     # Se ejecuta manualmente cuando sea necesario
-    def _get_all_product_extend_list_session(self):
+    def get_all_product_extend_list_session(self):
         for session in self:
             session.config_id._get_all_product_extend_list()
         return True
 
     #Se ejecuta manualmente
-    def _get_session(self):
+    def get_session(self):
         for session in self:
             xml_json = session.config_id.red_autentication('GetSession')
+            logging.warning(xml_json)
+            if "SessionId" in xml_json:
+                if xml_json["SessionId"]:
+                    session.sessionid = xml_json["SessionId"]
         return True

@@ -14,6 +14,7 @@
     'data': [
         'views/pos_config_view.xml',
         'views/sucasa_view.xml',
+        'views/pos_session_view.xml',
         # 'security/ir.model.access.csv',
     ],
     'installable': True,
