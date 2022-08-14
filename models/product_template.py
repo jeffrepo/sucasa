@@ -7,6 +7,7 @@ class ProductTemplate(models.Model):
     red_id = fields.Integer("ProductId")
     reference1 = fields.Char("Reference 1")
     reference2 = fields.Char("Reference 2")
+    reference3 = fields.Char('Reference 3')
     lenght_ref1 = fields.Integer("Lenght Ref1")
     lenght_ref2 = fields.Integer("Lenght Ref2")
     lenght_ref3 = fields.Integer("Lenght Ref3")

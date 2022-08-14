@@ -8,6 +8,7 @@
             <sheet position="inside">
                 <h2>RED +</h2>
                 <button string="Regitrar Token" name="register_pos_token" type="object" class="oe_highlight"/>
+                / <button string="Cambiar clave de cajero" name="change_clerk_code" type="object" class="oe_highlight"/>
 
                 <div class="row mt16 o_settings_container" id="posbox_reference">
 
@@ -29,6 +30,14 @@
                             <field name="clerkcode"/>
                         </div>
                     </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <label for="newclerkcode" string="Nuevo identificador de cajero"/>
+                            <field name="newclerkcode"/>
+                        </div>
+                    </div>
+
                     <div class="col-xs-12 col-md-6 o_setting_box">
                         <!-- <div class="o_setting_left_pane">
                             <field name="storeid"/>

@@ -20,6 +20,7 @@ class PosConfig(models.Model):
     storeid = fields.Char('Identificador de sucursal')
     posid = fields.Char('Identificador de caja')
     postoken = fields.Char('Token')
+    newclerkcode = fields.Char('NuevoCodigo cajero')
 
     # def eli_park(self):
     #
@@ -41,7 +42,7 @@ class PosConfig(models.Model):
         pos_config_ids = self.env['pos.config'].search([('clientid','!=', False),('storeid','!=', False),('posid','!=', False),('clerkcode','!=',False),('postoken','!=', False)])
         if pos_config_ids:
             for pos in pos_config_ids:
-                xml_json = pos.red_autentication('GetAvailableCarriers')
+                xml_json = pos.red_autentication('GetAvailableCarriers', False)
                 if "Carrier" in xml_json:
                     if len(xml_json["Carrier"]) > 0:
                         odoo_carriers_ids = self.env['sucasa.carrier'].search([])
@@ -66,7 +67,7 @@ class PosConfig(models.Model):
         pos_config_ids = self.env['pos.config'].search([('clientid','!=', False),('storeid','!=', False),('posid','!=', False),('clerkcode','!=',False),('postoken','!=', False)])
         if pos_config_ids:
             for pos in pos_config_ids:
-                xml_json = pos.red_autentication('GetProductsCategoriesByClientId')
+                xml_json = pos.red_autentication('GetProductsCategoriesByClientId', False)
                 logging.warning(xml_json)
                 if "ProductCategories" in xml_json:
                     if len(xml_json["ProductCategories"]) > 0:
@@ -80,6 +81,7 @@ class PosConfig(models.Model):
                         for category in xml_json["ProductCategories"]:
                             if int(category["ProductCategoryId"]) not in odoo_categ_dic:
                                 category_id = self.env['product.category'].create({'ProductCategoryId': category["ProductCategoryId"] ,'name': category["ProductCategoryName"]})
+                                odoo_categ_dic[category_id.ProductCategoryId] = category_id
                             else:
                                 odoo_categ_dic[int(category["ProductCategoryId"])].update({'name': category["ProductCategoryName"]})
         return odoo_categ_dic
@@ -109,6 +111,12 @@ class PosConfig(models.Model):
         submit = False
         return submit
 
+    def change_clerk_code(self):
+        for config in self:
+            if config.clientid and config.storeid and config.posid and config.clerkcode and config.newclerkcode:
+                xml_json = config.red_autentication('ChangeClerkCode')
+        return True
+
     # Se ejecuta una vez al dia y manda a llamar _get_available_carriers y _get_product_categories_by_client_id
     def _get_all_product_extend_list(self):
         products = {}
@@ -117,7 +125,7 @@ class PosConfig(models.Model):
             odoo_carriers_dic = self._get_available_carriers()
             odoo_categ_dic = self._get_product_categories_by_client_id()
             for pos in pos_config_ids:
-                xml_json = pos.red_autentication('GetAllProductExtendList')
+                xml_json = pos.red_autentication('GetAllProductExtendList', False)
                 logging.warning(xml_json)
                 if "ProductExtended" in xml_json:
                     if len(xml_json) > 0:
@@ -146,6 +154,8 @@ class PosConfig(models.Model):
                                     product_dic["reference1"] = product["Reference1"]
                                 if "Reference2" in product:
                                     product_dic["reference2"] = product["Reference2"]
+                                if 'Reference3' in product:
+                                    product_dic['reference3'] = product['Reference3']
 
                                 if "CategoryId" in product:
                                     product_dic["categ_id"] = odoo_categ_dic[int(product["CategoryId"])].id if int(product["CategoryId"]) in odoo_categ_dic else False
@@ -171,6 +181,8 @@ class PosConfig(models.Model):
                                     product_dic["reference1"] = product["Reference1"]
                                 if "Reference2" in product:
                                     product_dic["reference2"] = product["Reference2"]
+                                if 'Reference3' in product:
+                                    product_dic['reference3'] = product['Reference3']
 
 
                                 if "CategoryId" in product:
@@ -181,7 +193,7 @@ class PosConfig(models.Model):
                                 odoo_product_dic[int(product["ProductId"])].update(product_dic)
         return products
 
-    def red_autentication(self,method):
+    def red_autentication(self,method,var_x):
         for pos in self:
             data = False
             attr_qname = etree.QName("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation")
@@ -208,20 +220,49 @@ class PosConfig(models.Model):
             TagPosToken = etree.SubElement(TagPosCredentials, "PosToken",{})
             TagPosToken.text = pos.postoken
 
+            if method == "ChangeClerkCode":
+                TagNewClerkCode = etree.SubElement(TagMethod, "newClerkCode",nsmap=ns_map)
+                TagNewClerkCode.text = pos.newclerkcode
+
+            if method == 'CheckReference':
+                TagCheckReferenceReq = etree.SubElement(TagMethod, 'checkReferenceReq', nsmap=ns_map)
+                TagProductId = etree.SubElement(TagCheckReferenceReq, 'ProductId', nsmap=ns_map)
+                TagReference1 = etree.SubElement(TagCheckReferenceReq, 'Reference1', nsmap=ns_map)
+                TagReference3 = etree.SubElement(TagCheckReferenceReq, 'Reference3', nsmap=ns_map)
+                TagPosTransactionId = etree.SubElement(TagCheckReferenceReq, 'PosTransactionId', nsmap=ns_map)
+                if len(var_x)>0:
+                    if var_x[0]['product_id']:
+                        # TagProductId.text = str(var_x[0]['product_id'])
+                        TagProductId.text = str(100)
+                    if var_x[0]['reference1']:
+                        # TagReference1.text = str(var_x[0]['reference1'])
+                        TagReference1.text = "016137402003662012310000007413"
+                    if var_x[0]['reference3']:
+                        TagReference3.text = str(var_x[0]['reference3'])
+                    else:
+                        TagReference3.text = ''
+                    if var_x[0]['pos_transaccion_id']:
+                        TagPosTransactionId.text = str(var_x[0]['pos_transaccion_id'])
+
             xmls = etree.tostring(Envelope, encoding="UTF-8")
             xmls = xmls.decode("utf-8").replace("&amp;", "&").encode("utf-8")
             xmls_base64 = base64.b64encode(xmls)
+            logging.warning('XMLS')
             logging.warning(xmls)
 
             url = "https://wspruebas.cedixvirtual.mx/redmas_plat/WebService/SaleService.asmx"
 
             headers = {"content-type": "text/xml; charset=utf-8", 'Host': "wspruebas.cedixvirtual.mx"}
             response = requests.post(url, data = xmls, headers = headers)
+            logging.warning('status code')
+            logging.warning(response.status_code)
             if response:
                 if response.status_code == 200:
                     if response.content:
                         new_xml = xmltodict.parse(response.content)
+                        logging.warning('json.dumps(new_xml)')
                         logging.warning(json.dumps(new_xml))
+                        logging.warning('')
                         new_json1 = json.dumps(new_xml)
                         new_json = json.loads(new_json1)
                         if new_json:
@@ -294,6 +335,37 @@ class PosConfig(models.Model):
                                                             raise UserError(str(response_codes[response_code]))
                                                         else:
                                                             raise UserError('Error codigo no encontrado')
+
+                                    if method == "ChangeClerkCode":
+                                        logging.warning(new_json)
+                                        if "ChangeClerkCodeRespone" in new_json["soap:Envelope"]["soap:Body"]:
+                                            if "ChangeClerkCodeResult" in new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]:
+                                                if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]["ChangeClerkCodeResult"]:
+                                                    response_code = new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]["ChangeClerkCodeResult"]["ResponseCode"]
+                                                    if int(response_code) == 000:
+                                                        pos.clerkcode = pos.newclerkcode
+                                                        pos.newclerkcode = ""
+                                                        data = True
+                                                    else:
+                                                        raise UserError(new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]["ChangeClerkCodeResult"]["ResponseMessage"])
+
+                                    if method == 'CheckReference':
+                                        if 'CheckReferenceResponse' in new_json["soap:Envelope"]["soap:Body"]:
+                                            if "CheckReferenceResult" in new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]:
+                                                if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]:
+                                                    response_code = new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]['ResponseCode']
+                                                    if int(response_code) == 000:
+                                                        logging.warning('Estoy en pos config')
+                                                        logging.warning(new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"])
+                                                        logging.warning('')
+                                                        logging.warning('')
+                                                        logging.warning('')
+                                                    else:
+                                                        raise UserError(new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]["ResponseMessage"])
+                                                # if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["CheckReference"][""]:
+
+
+
                 else:
                     raise UserError(str('Error de conexion'))
 
