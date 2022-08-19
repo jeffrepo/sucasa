@@ -7,3 +7,4 @@ from . import pos_order
 from . import sucasa
 from . import product
 from . import product_template
+from . import pos_payment_method

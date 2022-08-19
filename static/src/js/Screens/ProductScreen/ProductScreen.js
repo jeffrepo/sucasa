@@ -20,15 +20,47 @@ odoo.define('sucasa.ProductScreen', function(require) {
         useListener('click-pay', this._onClickPay);
       }
 
-      _onClickPay() {
-          var valueProducts = this.codeProducts();
-          super._onClickPay();
-          console.log('Que es codeProducts()');
-          console.log(valueProducts);
-          if(valueProducts == true){
-            this.showScreen('PaymentScreen');
-          }
+      fCheckReference(red_id, product_dicc){
+        if(red_id){
+          rpc.query({
+                model: 'pos.order',
+                method: 'check_reference',
+                args: [[],[this.env.pos.config_id], [product_dicc]],
+              },{
 
+          }).then(function (check_reference){
+            console.log('Estamos llamando a una función');
+            console.log(check_reference);
+
+          });
+        }
+        return true;
+      }
+
+      fGetBalanceByBag(number){
+        if(number){
+          var getBalanceByBag
+          rpc.query({
+            model: 'pos.order',
+            method: 'get_balance_by_bag',
+            args:[[], [this.env.pos.config_id], [number]]
+          },{
+          }).then(function (get_balance_by){
+            getBalanceByBag = get_balance_by;
+            console.log('Ya casi');
+            console.log(getBalanceByBag);
+            if(getBalanceByBag){
+              return true;
+            }else{
+              return false;
+            }
+
+          });
+
+
+        }else {
+          return false;
+        }
       }
 
       codeProducts(){
@@ -41,65 +73,66 @@ odoo.define('sucasa.ProductScreen', function(require) {
           'pos_transaccion_id':'',
         }
         var order = self.env.pos.get_order();
-        console.log(self.product_template)
         var value_red_id = false;
+        var number = 0;
         order.get_orderlines().forEach(function(prod){
           if (product_dicc['product_id'] ==0){
-            console.log('PRODUCTO')
-            console.log(prod)
             product_dicc['product_id'] = prod.product.red_id;
-            product_dicc['reference1'] = prod.product.reference1;
-            product_dicc['reference3'] = prod.product.reference3;
+            product_dicc['reference1'] = order.get_phoneNumber();
+            product_dicc['reference3'] = order.get_verifierCode();
             var uid = prod.order.uid.replace('-', '')
-            console.log(uid.replace('-',''))
             uid=uid.replace('-','')
             product_dicc['pos_transaccion_id'] = uid.substr(0,9)
           }
-
-          // if (prod.product.red_id){
-          //   value_red_id = true
-          // }
-        })
-
-        console.log(product_dicc)
-        rpc.query({
-              model: 'pos.order',
-              method: 'check_reference',
-              args: [[],[this.env.pos.config_id], [product_dicc]],
-            },{
-
-        }).then(function (check_reference){
-          console.log('Otra vez check_reference')
-          console.log(check_reference);
-          if(value_red_id == true){
-            return true
-          }else {
-            return false
+          if (prod.product.red_id){
+            value_red_id = true
+          }
+          if(prod.product.categ_id[1] == 'Recarga'){
+            number = 1;
+          }else{
+            number = 2;
           }
         })
 
+        console.log('Product dicc');
+        console.log(product_dicc)
+        if(value_red_id == true){
+          var check_reference = this.fCheckReference(value_red_id, product_dicc);
+          var get_balance_by_bag = this.fGetBalanceByBag(number);
+          if(check_reference){
+            if(get_balance_by_bag){
+                return true
+            }
 
-
-
-
+          }
+        }else {
+          return false
+        }
 
 
       }
 
 
+      _onClickPay() {
+          var valueProducts = this.codeProducts();
+          console.log('valueProducts');
+          console.log(valueProducts);
+          if(valueProducts == true){
+            this.showScreen('PaymentScreen');
+            super._onClickPay();
+          }else{
+            this.showScreen('ProductScreen');
+          }
 
+
+
+      }
 
     }
 
     Registries.Component.extend(ProductScreen, SuCasaProductScreen);
 
     return ProductScreen;
-
-
-
-
-
-
 
 
 

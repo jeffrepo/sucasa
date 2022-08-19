@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve" type="module">
+
+    <t t-name="CustomPopup" owl="1">
+        <div role="dialog" class="modal-dialog">
+            <div class="popup popup-couponproducts" style="background-color: #D2B4DE; border-radius:15px">
+
+                <p class="title">
+                    <t t-esc="props.title" />
+                </p>
+                <span class="body">
+                    <!-- Adding text field-->
+                    <div style="padding: 0px 10px 10px; border-radius:9px">
+                        <p align="left"><b>Número:</b></p>
+                        <input type="text" id="number_customer"/>
+                    </div>
+                    <!-- Adding verifier code field-->
+                    <div style="padding: 0px 10px 10px; border-radius:9px">
+                      <p align="left"><b>Código verificador:</b></p>
+                      <input type="number" id="verifier_code"/>
+                    </div>
+                </span>
+                <div class="footer">
+                    <div class="button cancel" t-on-click="confirm">
+                        <t t-esc="props.confirmText" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

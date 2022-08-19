@@ -15,19 +15,18 @@
         'views/pos_config_view.xml',
         'views/sucasa_view.xml',
         'views/pos_session_view.xml',
-        # 'security/ir.model.access.csv',
+
     ],
     'assets':{
         'point_of_sale.assets': [
-            # 'pos_ticket_mx/static/src/css/pos_ticket_mx.css',
-            # 'pos_ticket_mx/static/src/js/qrcode.js',
-            # 'pos_ticket_mx/static/src/js/Screens/PaymentScreen/PaymentScreen.js',
-            # 'pos_ticket_mx/static/src/js/Screens/ReceiptScreen/OrderReceipt.js',
             'sucasa/static/src/js/Screens/ProductScreen/ProductScreen.js',
+            'sucasa/static/src/js/ProductScreenButtons.js',
+            'sucasa/static/src/js/Popups/CustomPopup.js'
         ],
         'web.assets_qweb':[
-            # 'pos_ticket_mx/static/src/xml/**/*',
-        ],
+            'sucasa/static/src/xml/ProductScreenButtonsViews.xml',
+            'sucasa/static/src/xml/ViewsPopups/CustomPopupView.xml'
+        ]
     },
     'installable': True,
     'auto_install': False,

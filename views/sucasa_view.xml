@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
   <menuitem id="menu_pos_sucasa"
       name="Red +"
       parent="point_of_sale.menu_point_root"
@@ -46,4 +47,76 @@
           action="sucasa.action_sucasa_carrier"
           parent="sucasa.menu_pos_sucasa"
           sequence="1"/>
+
+
+      <record id="view_sucasa_pay_notification" model="ir.ui.view">
+          <field name="name">sucasa.pay.notification.form</field>
+          <field name="model">sucasa.pay_notification</field>
+          <field name="arch" type="xml">
+              <form string="PayNotification">
+                  <header>
+                    <button name="button_pay" string="Pagar" type="object" class="oe_highlight"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,paid" />
+                  </header>
+                  <sheet>
+                      <group>
+                        <field name="config_id"/>
+                        <field name="amount"/>
+                        <field name="bank"/>
+                        <field name="document_number"/>
+                        <field name="document_date"/>
+                        <field name="origin_account_number"/>
+                        <field name="payment_method"/>
+                        <field name="bagId"/>
+                      </group>
+                  </sheet>
+
+              </form>
+          </field>
+      </record>
+
+      <record id="view_sucasa_pay_notification_search" model="ir.ui.view">
+          <field name="name">sucasa.pay_notification.search.view</field>
+          <field name="model">sucasa.pay_notification</field>
+          <field name="arch" type="xml">
+              <search string="Pay notification">
+                  <field name="config_id"/>
+                  <field name="amount"/>
+              </search>
+          </field>
+      </record>
+
+      <record id="action_pos_sucasa_pay_notification" model="ir.actions.act_window">
+          <field name="name">Pay Notification</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">sucasa.pay_notification</field>
+          <field name="view_mode">tree,form</field>
+          <field name="search_view_id" ref="view_sucasa_pay_notification_search"/>
+          <field name="search_view_id" ref="view_sucasa_pay_notification"/>
+      </record>
+
+      <record id="action_sucasa_pay_notification" model="ir.actions.act_window">
+          <field name="name">Pay Notification</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">sucasa.pay_notification</field>
+          <field name="view_mode">tree,form</field>
+          <field name="domain"></field>
+          <field name="search_view_id" ref="view_sucasa_pay_notification_search"/>
+
+          <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                  Pay Notification
+              </p><p>
+                  Create a new pay notification
+              </p>
+          </field>
+      </record>
+
+      <menuitem
+          id="menu_pos_sucasa_pay_notification"
+          action="sucasa.action_sucasa_pay_notification"
+          parent="sucasa.menu_pos_sucasa"
+          sequence="2"/>
+
+
 </odoo>
