@@ -7,6 +7,7 @@ class ProductTemplate(models.Model):
     red_id = fields.Integer("ProductId")
     reference1 = fields.Char("Reference 1")
     reference2 = fields.Char("Reference 2")
+    reference3 = fields.Char('Reference 3')
     lenght_ref1 = fields.Integer("Lenght Ref1")
     lenght_ref2 = fields.Integer("Lenght Ref2")
     lenght_ref3 = fields.Integer("Lenght Ref3")
@@ -16,3 +17,4 @@ class ProductTemplate(models.Model):
     validate_ref3 = fields.Char("ValidateRef3")
     carrier_id = fields.Many2one("sucasa.carrier","Carrier")
     legal_information = fields.Char("Lega Information")
+    support_query = fields.Boolean(string='Support Query') 

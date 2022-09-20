@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve" type="module">
+
+    <t t-name="CustomPopup" owl="1">
+        <div role="dialog" class="modal-dialog">
+            <div class="popup popup-couponproducts" style="background-color: #D2B4DE; border-radius:15px">
+
+                <p class="title">
+                    <t t-esc="props.title" />
+                </p>
+                <span class="body">
+                    <!-- Add field reference1-->
+                    <div style="padding: 0px 10px 10px; border-radius:9px">
+                        <p align="left"><b>Reference 1</b></p>
+                        <input type="text" id="reference1"/>
+                    </div>
+
+                    <!-- Add field reference2-->
+                    <div style="padding: 0px 10px 10px; border-radius:9px">
+                      <p align="left"><b>Reference 2</b></p>
+                      <input type="text" id="reference2"/>
+                    </div>
+
+                    <!-- Adding verifier code field-->
+                    <div style="padding: 0px 10px 10px; border-radius:9px">
+                      <p align="left"><b>Reference 3</b></p>
+                      <input type="text" id="reference3"/>
+                    </div>
+                </span>
+                <div class="footer">
+                    <div class="button cancel" t-on-click="confirm">
+                        <t t-esc="props.confirmText" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

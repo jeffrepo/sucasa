@@ -15,8 +15,23 @@
         'views/pos_config_view.xml',
         'views/sucasa_view.xml',
         'views/pos_session_view.xml',
-        # 'security/ir.model.access.csv',
+        'views/pos_order_views.xml',
+        'security/ir.model.access.csv'
+
     ],
+    'assets':{
+        'point_of_sale.assets': [
+            'sucasa/static/src/js/Screens/ProductScreen/ProductScreen.js',
+            'sucasa/static/src/js/ProductScreenButtons.js',
+            'sucasa/static/src/js/Popups/CustomPopup.js',
+            'sucasa/static/src/js/Screens/ReceiptScreen/OrderReceipt.js'
+        ],
+        'web.assets_qweb':[
+            'sucasa/static/src/xml/ProductScreenButtonsViews.xml',
+            'sucasa/static/src/xml/ViewsPopups/CustomPopupView.xml',
+            'sucasa/static/src/xml/Screens/ReceiptScreen.xml'
+        ]
+    },
     'installable': True,
     'auto_install': False,
 }
