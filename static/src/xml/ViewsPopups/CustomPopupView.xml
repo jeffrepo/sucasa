@@ -9,15 +9,22 @@
                     <t t-esc="props.title" />
                 </p>
                 <span class="body">
-                    <!-- Adding text field-->
+                    <!-- Add field reference1-->
                     <div style="padding: 0px 10px 10px; border-radius:9px">
-                        <p align="left"><b>Número:</b></p>
-                        <input type="text" id="number_customer"/>
+                        <p align="left"><b>Reference 1</b></p>
+                        <input type="text" id="reference1"/>
                     </div>
+
+                    <!-- Add field reference2-->
+                    <div style="padding: 0px 10px 10px; border-radius:9px">
+                      <p align="left"><b>Reference 2</b></p>
+                      <input type="text" id="reference2"/>
+                    </div>
+
                     <!-- Adding verifier code field-->
                     <div style="padding: 0px 10px 10px; border-radius:9px">
-                      <p align="left"><b>Código verificador:</b></p>
-                      <input type="number" id="verifier_code"/>
+                      <p align="left"><b>Reference 3</b></p>
+                      <input type="text" id="reference3"/>
                     </div>
                 </span>
                 <div class="footer">

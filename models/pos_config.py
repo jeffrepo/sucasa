@@ -9,6 +9,7 @@ import requests
 import base64
 import logging
 import xmltodict, json
+import random
 
 
 
@@ -129,7 +130,7 @@ class PosConfig(models.Model):
     def change_clerk_code(self):
         for config in self:
             if config.clientid and config.storeid and config.posid and config.clerkcode and config.newclerkcode:
-                xml_json = config.red_autentication('ChangeClerkCode')
+                xml_json = config.red_autentication('ChangeClerkCode', False)
         return True
 
     # Se ejecuta una vez al dia y manda a llamar _get_available_carriers y _get_product_categories_by_client_id
@@ -170,7 +171,9 @@ class PosConfig(models.Model):
                                     product_dic["reference2"] = product["Reference2"]
                                 if 'Reference3' in product:
                                     product_dic['reference3'] = product['Reference3']
-
+                                if 'SupportQuery' in product:
+                                    if product['SupportQuery'] == 'true':
+                                        product_dic['support_query'] = True
                                 if "CategoryId" in product:
                                     product_dic["categ_id"] = odoo_categ_dic[int(product["CategoryId"])].id if int(product["CategoryId"]) in odoo_categ_dic else False
                                 if "carrier_id" in product:
@@ -197,7 +200,9 @@ class PosConfig(models.Model):
                                     product_dic["reference2"] = product["Reference2"]
                                 if 'Reference3' in product:
                                     product_dic['reference3'] = product['Reference3']
-
+                                if 'SupportQuery' in product:
+                                    if product['SupportQuery'] == 'true':
+                                        product_dic['support_query'] = True
 
                                 if "CategoryId" in product:
                                     product_dic["categ_id"] = odoo_categ_dic[int(product["CategoryId"])].id if int(product["CategoryId"]) in odoo_categ_dic else False
@@ -238,7 +243,9 @@ class PosConfig(models.Model):
                 TagNewClerkCode = etree.SubElement(TagMethod, "newClerkCode",nsmap=ns_map)
                 TagNewClerkCode.text = pos.newclerkcode
 
-            if method == 'CheckReference':
+            if method == 'CheckReference' :
+                logging.warning('CheckReference')
+
                 TagCheckReferenceReq = etree.SubElement(TagMethod, 'checkReferenceReq', nsmap=ns_map)
                 TagProductId = etree.SubElement(TagCheckReferenceReq, 'ProductId', nsmap=ns_map)
                 TagReference1 = etree.SubElement(TagCheckReferenceReq, 'Reference1', nsmap=ns_map)
@@ -246,8 +253,8 @@ class PosConfig(models.Model):
                 TagPosTransactionId = etree.SubElement(TagCheckReferenceReq, 'PosTransactionId', nsmap=ns_map)
                 if len(var_x)>0:
                     if var_x[0]['product_id']:
-                        # TagProductId.text = str(var_x[0]['product_id'])
-                        TagProductId.text = str(100)
+                        TagProductId.text = str(var_x[0]['product_id'])
+                        # TagProductId.text = str(100)
                     if var_x[0]['reference1']:
                         TagReference1.text = str(var_x[0]['reference1'])
                         # TagReference1.text = "016137402003662012310000007413"
@@ -256,7 +263,9 @@ class PosConfig(models.Model):
                     else:
                         TagReference3.text = ''
                     if var_x[0]['pos_transaccion_id']:
+                        # TagPosTransactionId.text = '9'
                         TagPosTransactionId.text = str(var_x[0]['pos_transaccion_id'])
+
 
             if method == 'Sale':
                 TagSaleRequest = etree.SubElement(TagMethod, 'saleRequest', nsmap=ns_map)
@@ -268,32 +277,68 @@ class PosConfig(models.Model):
                 TagPosTransactionId = etree.SubElement(TagSaleRequest, 'PosTransactionId', nsmap=ns_map)
                 TagSession = etree.SubElement(TagSaleRequest, 'Session', nsmap=ns_map)
                 if len(var_x)>0:
-                    if var_x['product_id']:
-                        TagProductId.text = str(var_x['product_id'])
+                    logging.warning('Welcome to Method Sale')
+                    logging.warning(var_x)
+                    if var_x[0]['product_id']:
+                        TagProductId.text = str(var_x[0]['product_id'])
                         # TagProductId.text = '1'
-                    if var_x['amount']:
-                        TagAmount.text = str(var_x['amount'])
+                    if var_x[0]['amount']:
+                        TagAmount.text = str(var_x[0]['amount'])
                         # TagAmount.text = '20'
-                    if var_x['reference_1']:
-                        TagReference1.text = str(var_x['reference_1'])
+                    if var_x[0]['reference1']:
+                        TagReference1.text = str(var_x[0]['reference1'])
                     else:
                         TagReference1.text = ''
-                    if var_x['reference_2']:
-                        TagReference2.text = str(var_x['reference_2'])
+                    if var_x[0]['reference2']:
+                        TagReference2.text = str(var_x[0]['reference2'])
                     else:
                         TagReference2.text = ''
-                    if var_x['reference_3']:
-                        TagReference3.text = str(var_x['reference_3'])
+                    if var_x[0]['reference3']:
+                        TagReference3.text = str(var_x[0]['reference3'])
                     else:
                         TagReference3.text = ''
-                    if var_x['pos_transaccion_id']:
-                        TagPosTransactionId.text=str(var_x['pos_transaccion_id'])
-                    if var_x['sesion']:
-                        TagSession.text = str(var_x['sesion'])
+                    if var_x[0]['pos_transaccion_id']:
+                        TagPosTransactionId.text=str(var_x[0]['pos_transaccion_id'])
+                    if var_x[0]['session']:
+                        TagSession.text = str(var_x[0]['session'])
+
+            if method == 'CheckSale':
+                TagSaleRequest = etree.SubElement(TagMethod, 'saleRequest', nsmap=ns_map)
+                TagProductId = etree.SubElement(TagSaleRequest, 'ProductId', nsmap=ns_map)
+                TagAmount = etree.SubElement(TagSaleRequest, 'Amount', nsmap=ns_map)
+                TagReference1 = etree.SubElement(TagSaleRequest, 'Reference1', nsmap=ns_map)
+                TagReference2 = etree.SubElement(TagSaleRequest, 'Reference2', nsmap=ns_map)
+                TagReference3 = etree.SubElement(TagSaleRequest, 'Reference3', nsmap=ns_map)
+                TagPosTransactionId = etree.SubElement(TagSaleRequest, 'PosTransactionId', nsmap=ns_map)
+                TagSession = etree.SubElement(TagSaleRequest, 'Session', nsmap=ns_map)
+                if len(var_x)>0:
+                    if var_x[0]['product_id']:
+                        TagProductId.text = str(var_x[0]['product_id'])
+                        # TagProductId.text = '1'
+                    if var_x[0]['amount']:
+                        TagAmount.text = str(var_x[0]['amount'])
+                        # TagAmount.text = '20'
+                    if var_x[0]['reference1']:
+                        TagReference1.text = str(var_x[0]['reference1'])
+                    else:
+                        TagReference1.text = ''
+                    if var_x[0]['reference2']:
+                        TagReference2.text = str(var_x[0]['reference2'])
+                    else:
+                        TagReference2.text = ''
+                    if var_x[0]['reference3']:
+                        TagReference3.text = str(var_x[0]['reference3'])
+                    else:
+                        TagReference3.text = ''
+                    if var_x[0]['pos_transaccion_id']:
+                        TagPosTransactionId.text=str(var_x[0]['pos_transaccion_id'])
+                    if var_x[0]['session']:
+                        TagSession.text = str(var_x[0]['session'])
 
             if method == 'GetBalanceByBag':
                 TagBagId = etree.SubElement(TagMethod, 'bagId', nsmap=ns_map)
                 TagBagId.text = str(var_x)
+                # TagBagId.text = '3'
 
             if method == 'SubmitPayNotification':
                 TagAmount = etree.SubElement(TagMethod, 'amount', nsmap=ns_map)
@@ -332,6 +377,7 @@ class PosConfig(models.Model):
             response = requests.post(url, data = xmls, headers = headers)
             logging.warning('status code')
             logging.warning(response.status_code)
+
             if response:
                 if response.status_code == 200:
                     if response.content:
@@ -398,7 +444,7 @@ class PosConfig(models.Model):
                                             if "RegisterPosTokenResult" in new_json["soap:Envelope"]["soap:Body"]["RegisterPosTokenResponse"]:
                                                 if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["RegisterPosTokenResponse"]["RegisterPosTokenResult"]:
                                                     response_code = new_json["soap:Envelope"]["soap:Body"]["RegisterPosTokenResponse"]["RegisterPosTokenResult"]["ResponseCode"]
-                                                    if response_code == 000:
+                                                    if int(response_code) == 000:
                                                         logging.warning('transaccion exitosa')
                                                         registered = True
                                                     else:
@@ -425,35 +471,51 @@ class PosConfig(models.Model):
                                             if "CheckReferenceResult" in new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]:
                                                 if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]:
                                                     response_code = new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]['ResponseCode']
+
                                                     if int(response_code) == 000:
                                                         data = new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]
                                                     else:
-                                                        raise UserError(new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]["ResponseMessage"])
+                                                        data = new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]['ResponseMessage']
+                                                        # raise UserError(new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]["ResponseMessage"])
                                                 # if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["CheckReference"][""]:
 
                                     if method == 'Sale':
+                                        logging.warning('Method SALE again-----------------')
+                                        logging.warning('')
                                         if 'SaleResponse' in new_json["soap:Envelope"]["soap:Body"]:
                                             if 'SaleResult' in new_json["soap:Envelope"]["soap:Body"]['SaleResponse']:
                                                 if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']:
+                                                    logging.warning(new_json["soap:Envelope"]["soap:Body"]['SaleResponse'])
                                                     response_code = new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']['ResponseCode']
                                                     if int(response_code) == 000:
                                                         data = new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']
                                                     else:
-                                                        raise UserError(new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']['ResponseMessage'])
-
+                                                        # raise UserError(new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']['ResponseMessage'])
+                                                        data = new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']['ResponseMessage']
+                                    if method == 'CheckSale':
+                                        logging.warning('Llamando al metodo CHECKSALE')
+                                        logging.warning(new_json["soap:Envelope"]["soap:Body"])
+                                        if 'CheckSaleResponse' in new_json["soap:Envelope"]["soap:Body"]:
+                                            if 'CheckSaleResult' in new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']:
+                                                if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']['CheckSaleResult']:
+                                                    response_code = new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']['CheckSaleResult']['ResponseCode']
+                                                    if int(response_code) == 000:
+                                                        data = new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']['CheckSaleResult']
+                                                    else:
+                                                        data = new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']['CheckSaleResult']['ResponseMessage']
                                     if method == 'GetBalanceByBag':
                                         if 'GetBalanceByBagResponse' in new_json["soap:Envelope"]["soap:Body"]:
                                             if 'GetBalanceByBagResult' in new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']:
                                                 if 'ResponseCode'in new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']:
                                                     response_code = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseCode']
                                                     balance = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['Balance']
-                                                    if int(response_code) == 000 and int(balance) > 0:
+                                                    if int(response_code) == 000 and float(balance) > 0:
                                                         data = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']
-                                                    elif int(response_code) == 000 and int(balance) == 0:
-                                                        data = False
+                                                    elif int(response_code) == 000 and float(balance) == 0:
+                                                        data = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseMessage'] + ' saldo = 0'
                                                     else:
-                                                        raise UserError(new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseMessage'])
-
+                                                        # raise UserError(new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseMessage'])
+                                                        data = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseMessage']
                                     if method == 'GetAvailablePaymentMethods':
                                         if 'GetAvailablePaymentMethodsResponse' in new_json["soap:Envelope"]["soap:Body"]:
                                             if 'GetAvailablePaymentMethodsResult' in new_json["soap:Envelope"]["soap:Body"]['GetAvailablePaymentMethodsResponse']:

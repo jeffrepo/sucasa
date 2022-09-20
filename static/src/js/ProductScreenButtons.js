@@ -25,12 +25,13 @@ odoo.define('sucasa.ProductScreenButtons', function(require) {
         var order = this.env.pos.get_order();
 
         const { confirmed, payload: inputNote } = await this.showPopup('CustomPopup', {
-            title: this.env._t('Número de teléfono y código verificador'),
+            title: this.env._t('Datos verificadores'),
         });
 
         if (confirmed) {
-            order.set_numberPhone(document.getElementById('number_customer').value)
-            order.set_verifierCode(document.getElementById('verifier_code').value)
+            order.set_reference1(document.getElementById('reference1').value)
+            order.set_reference2(document.getElementById('reference2').value)
+            order.set_reference3(document.getElementById('reference3').value)
 
         };
 
@@ -44,27 +45,47 @@ odoo.define('sucasa.ProductScreenButtons', function(require) {
 
       initialize: function() {
         _super_order.initialize.apply(this,arguments);
-        this.set_numberPhone();
-        this.set_verifierCode();
+        this.set_reference1();
+        this.set_reference2();
+        this.set_reference3();
       },
 
-      get_phoneNumber: function(){
-        return this.get('phoneNumber');
+      export_as_JSON: function() {
+        var json = _super_order.export_as_JSON.apply(this,arguments);
+        json.reference1 = this.get_reference1();
+        json.reference2 = this.get_reference2();
+        json.reference3 = this.get_reference3();
+
+        return json;
       },
 
-      set_numberPhone: function(phoneNumber){
+      get_reference1: function(){
+        return this.get('reference1');
+      },
+
+      set_reference1: function(reference1){
         this.set({
-          phoneNumber: phoneNumber
+          reference1: reference1
         });
       },
 
-      get_verifierCode: function(){
-        return this.get('verifierCode');
+      get_reference2: function(){
+        return this.get('reference2');
       },
 
-      set_verifierCode: function(verifierCode){
+      set_reference2: function(reference2){
         this.set({
-          verifierCode: verifierCode
+          reference2: reference2
+        });
+      },
+
+      get_reference3: function(){
+        return this.get('reference3');
+      },
+
+      set_reference3: function(reference3){
+        this.set({
+          reference3: reference3
         });
       }
 

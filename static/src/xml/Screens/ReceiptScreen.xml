@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template_special_sucasa" xml:space="preserve">
+
+  <t t-name="OrderReceipt_replace" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" owl="1">
+
+    <xpath expr="//div[hasclass('pos-receipt')]" position="replace">
+      <br/>
+
+      <div class="pos-receipt">
+        <style>
+          .texto-justificado{
+          text-align: justify;
+          }
+          .celda{
+          height:auto;
+          width:100%
+          }
+        </style>
+        <t t-if="receipt.company.logo">
+          <img class="pos-receipt-logo" t-att-src="receipt.company.logo" alt="Logo"/>
+          <table style="width:100%">
+
+            <tr>
+              <td colspan="2">
+                <hr style="border:1px dotted gray; width:100%"/>
+              </td>
+            </tr>
+
+            <tr>
+              <td colspan='2'>
+                <span t-esc='receipt.date.localestring'/>
+              </td>
+            </tr>
+
+            <tr>
+              <td colspan="2">
+                <hr style="border:1px dotted gray; width:100%"/>
+              </td>
+            </tr>
+
+            <tr t-foreach="receipt.orderlines" t-as="l">
+              <td align="left" colspan="2">
+                <span t-esc="l.product_name_wrapped[0]"/>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                Total a pagar:
+              </td>
+              <td t-foreach="receipt.orderlines" t-as="l">
+                <span t-esc="env.pos.format_currency(l.price)"/>
+              </td>
+            </tr>
+
+            <tr>
+              <td colspan="2">
+                <hr style="border:1px dotted gray; width:100%"/>
+              </td>
+            </tr>
+
+            <t t-if="state.transaccion_id">
+              <tr>
+                <td>
+                  Transacción:
+                </td>
+                <td>
+                  <span t-esc="state.transaccion_id"/>
+                </td>
+              </tr>
+            </t>
+
+            <t t-if="state.provider_authorizacion">
+              <tr style="height:25px;">
+                <td>
+                  Autorización:
+                </td>
+                <td style="word-break: break-all">
+                  <span t-esc="state.provider_authorizacion"/>
+                </td>
+              </tr>
+            </t>
+
+            <t t-if="state.reference1">
+              <tr style="height:25px;">
+                <td>
+                  Referencia 1:
+                </td>
+                <td>
+                  <span t-esc="state.reference1"/>
+                </td>
+              </tr>
+            </t>
+
+            <t t-if="state.reference2">
+              <tr style="height:25px;">
+                <td>
+                  Referencia 2:
+                </td>
+                <td>
+                  <span t-esc="state.reference2"/>
+                </td>
+              </tr>
+            </t>
+
+
+            <t t-if="state.reference3">
+              <tr style="height:25px;">
+                <td>
+                  Referencia 3:
+                </td>
+                <td style="height:auto; word-break: break-all">
+                  <span t-esc="state.reference3"/>
+                </td>
+              </tr>
+            </t>
+
+            <tr style="height:25px;">
+              <td>
+                Monto:
+              </td>
+              <td>
+                <span t-esc="env.pos.format_currency(receipt.total_rounded)"/>
+              </td>
+            </tr>
+
+            <tr style="height:25px;">
+              <td>
+                Comisión:
+              </td>
+              <td>
+                <span />
+              </td>
+            </tr>
+
+            <tr style="height:25px;">
+              <td>
+                IVA comisión:
+              </td>
+              <td>
+                <span/>
+              </td>
+            </tr>
+
+            <t t-if="state.legal_info">
+              <tr style="height:auto">
+                <td colspan="2" class="texto-justificado">
+                  <span t-esc="state.legal_info"/>
+                </td>
+              </tr>
+            </t>
+
+          </table>
+        </t>
+
+      </div>
+    </xpath>
+
+  </t>
+
+</templates>

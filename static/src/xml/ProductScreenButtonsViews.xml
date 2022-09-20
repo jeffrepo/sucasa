@@ -2,8 +2,8 @@
 <templates id="template" xml:space="preserve">
   <t t-name="ButtonNumberCustomer" owl="1">
     <div class="control-button" >
-      <i class="fa fa-user"/>
-      Número de teléfono
+      <i class="fa fa-puzzle-piece"/>
+      Códigos de referencia
     </div>
   </t>
 </templates>
