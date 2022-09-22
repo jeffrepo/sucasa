@@ -10,8 +10,7 @@ import base64
 import logging
 import xmltodict, json
 import random
-
-
+import uuid
 
 class PosConfig(models.Model):
     _inherit = 'pos.config'
@@ -577,6 +576,15 @@ class PosConfig(models.Model):
         TagBody = etree.SubElement(Envelope,SOAPN_NS+"Body",{})
         TagRegistedPosToken = etree.SubElement(TagBody, "RegisterPosToken", {'xmlns':"http://rpmmx.net/"})
         TagPosCredentials = etree.SubElement(TagRegistedPosToken, "posCredentials", {})
+
+        logging.warning('ANTES DE GENERAR')
+        logging.warning(self.postoken)
+        if self.postoken == False:
+            new_pos_token = str(uuid.uuid4())
+            self.postoken = new_pos_token
+            logging.warning('GENERANDO NUEVA TOKEN')
+            logging.warning(self.postoken)
+
         TagClientId = etree.SubElement(TagPosCredentials, "ClientId",nsmap=ns_map)
         # TagClientId.text = "429894"
         TagClientId.text = self.clientid

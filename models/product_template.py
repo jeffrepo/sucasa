@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, tools, _, SUPERUSER_ID
+import logging
 
 class ProductTemplate(models.Model):
     _inherit = "product.template"
@@ -17,4 +18,12 @@ class ProductTemplate(models.Model):
     validate_ref3 = fields.Char("ValidateRef3")
     carrier_id = fields.Many2one("sucasa.carrier","Carrier")
     legal_information = fields.Char("Lega Information")
-    support_query = fields.Boolean(string='Support Query') 
+    support_query = fields.Boolean(string='Support Query')
+
+
+    # def _search_barcode(self, operator, value):
+    #     value = False
+    #     logging.warning('test')
+    #     res = super(ProductTemplate, self)._search_barcode(operator, value)
+    #     logging.warning(res)
+    #     return res

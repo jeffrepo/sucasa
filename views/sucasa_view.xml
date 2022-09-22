@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-  <menuitem id="menu_pos_sucasa"
-      name="Red +"
-      parent="point_of_sale.menu_point_root"
-      sequence="10"/>
+    <menuitem id="menu_pos_sucasa"
+        name="Red +"
+        parent="point_of_sale.menu_point_root"
+        sequence="10"/>
 
+    <menuitem id="menu_pos_sucasa_extra"
+        name="Extra"
+        parent="point_of_sale.menu_point_root"
+        sequence="20"/>
 
       <record id="view_sucasa_carrier_search" model="ir.ui.view">
           <field name="name">sucasa.carrier.search.view</field>
@@ -75,6 +79,34 @@
           </field>
       </record>
 
+      <record id="view_sucasa_consulta_producto" model="ir.ui.view">
+          <field name="name">sucasa.pay.notification.form</field>
+          <field name="model">sucasa.consulta_producto</field>
+          <field name="arch" type="xml">
+              <form string="Consulta">
+                  <!-- <header>
+                    <button name="button_pay" string="Pagar" type="object" class="oe_highlight"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,paid" />
+                  </header> -->
+                  <sheet>
+                      <!-- <group> -->
+                        <!-- <field name="color" widget="int_color"/> -->
+                        <!-- <field name="name" default_focus="1"/> -->
+                        <field name="producto_id" default_focus="1"/>
+                        <!-- <widget name="my_widget"/>  -->
+                        <!-- <field name="producto_id"/>
+                        <button id="button_click" name="button_click" string="test b"/>
+                        <div t-name="some.template">
+                            <span class="val"><t t-esc="widget.count"/></span>
+                            <button>Increment</button>
+                        </div> -->
+                      <!-- </group> -->
+                  </sheet>
+
+              </form>
+          </field>
+      </record>
+
       <record id="view_sucasa_pay_notification_search" model="ir.ui.view">
           <field name="name">sucasa.pay_notification.search.view</field>
           <field name="model">sucasa.pay_notification</field>
@@ -86,13 +118,32 @@
           </field>
       </record>
 
+
+      <record id="view_sucasa_consulta_productos_search" model="ir.ui.view">
+          <field name="name">sucasa.consulta_producto.search.view</field>
+          <field name="model">sucasa.consulta_producto</field>
+          <field name="arch" type="xml">
+              <search string="Consulta">
+                  <field name="name"/>
+                  <field name="producto_id"/>
+              </search>
+          </field>
+      </record>
+
       <record id="action_pos_sucasa_pay_notification" model="ir.actions.act_window">
           <field name="name">Pay Notification</field>
           <field name="type">ir.actions.act_window</field>
           <field name="res_model">sucasa.pay_notification</field>
           <field name="view_mode">tree,form</field>
           <field name="search_view_id" ref="view_sucasa_pay_notification_search"/>
-          <field name="search_view_id" ref="view_sucasa_pay_notification"/>
+      </record>
+
+      <record id="action_pos_sucasa_consulta_productos" model="ir.actions.act_window">
+          <field name="name">Consulta de productos</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">sucasa.pay_notification</field>
+          <field name="view_mode">tree,form</field>
+          <field name="search_view_id" ref="view_sucasa_consulta_productos_search"/>
       </record>
 
       <record id="action_sucasa_pay_notification" model="ir.actions.act_window">
@@ -112,10 +163,147 @@
           </field>
       </record>
 
+      <record id="action_sucasa_consulta_productos" model="ir.actions.act_window">
+          <field name="name">Consulta de productos</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">sucasa.consulta_producto</field>
+          <field name="view_mode">tree,form</field>
+          <field name="domain"></field>
+          <field name="search_view_id" ref="view_sucasa_consulta_productos_search"/>
+          <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                  Consultas
+              </p><p>
+                  Crear una nueva consulta
+              </p>
+          </field>
+      </record>
+
+
+
+
+      <record id="sucasa_product_template_kanban_view" model="ir.ui.view">
+          <field name="name">Product.template.product.kanban</field>
+          <field name="model">product.template</field>
+          <field name="arch" type="xml">
+              <kanban sample="1" create="false" limit="1">
+                  <field name="id"/>
+                  <field name="product_variant_count"/>
+                  <field name="currency_id"/>
+                  <field name="activity_state"/>
+                  <progressbar field="activity_state" colors='{"planned": "success", "today": "warning", "overdue": "danger"}'/>
+                  <templates>
+                      <t t-name="kanban-box">
+                          <div class="oe_kanban_card oe_kanban_global_click" style="-webkit-box-flex: 1;
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 300px;
+    margin: 4px 8px;">
+
+                                <style>
+
+
+                            </style>
+                              <div class="o_kanban_image_sucasa" style="text-align:center">
+                                  <img t-att-src="kanban_image('product.template', 'image_128', record.id.raw_value)" alt="Product" class="" style="width:10%"/>
+                              </div>
+                              <div class="oe_kanban_details" style="    padding-left: 20px;
+    text-align: center;">
+                                  <div class="o_kanban_record_top mb-0">
+                                      <div class="o_kanban_record_headings">
+                                          <strong class="o_kanban_record_title" style="font-size:15px">
+                                              <field name="name"/>
+                                          </strong>
+                                      </div>
+                                      <field name="priority" widget="priority"/>
+                                  </div>
+                                  <t t-if="record.default_code.value">[<field name="default_code"/>]</t>
+                                  <div t-if="record.product_variant_count.value &gt; 1" groups="product.group_product_variant">
+                                      <strong>
+                                          <t t-esc="record.product_variant_count.value"/> Variants
+                                      </strong>
+                                  </div>
+                                  <div name="product_lst_price" class="mt-1">
+                                      Precio: <field name="list_price" widget="monetary" options="{'currency_field': 'currency_id', 'field_digits': True}" style="font-size:18px"></field>
+                                  </div>
+                              </div>
+                          </div>
+                      </t>
+                  </templates>
+              </kanban>
+          </field>
+      </record>
+
+      <record id="sucasa_product_template_search_view" model="ir.ui.view">
+          <field name="name">product.template.search</field>
+          <field name="model">product.template</field>
+          <field name="arch" type="xml">
+              <search string="Product">
+                  <field name="barcode"/>
+                  <!-- <field name="name" string="Product" filter_domain="[('barcode', '=', self)]"/>
+                  <field name="categ_id" filter_domain="[('categ_id', 'child_of', raw_value)]"/>
+                  <separator/>
+                  <filter string="Services" name="services" domain="[('type','=','service')]"/>
+                  <filter string="Products" name="consumable" domain="[('type', 'in', ['consu', 'product'])]"/>
+                  <separator/>
+                  <filter string="Can be Sold" name="filter_to_sell" domain="[('sale_ok','=',True)]"/>
+                  <filter string="Can be Purchased" name="filter_to_purchase" domain="[('purchase_ok', '=', True)]"/>
+                  <separator/>
+                  <field string="Attributes" name="attribute_line_ids" groups="product.group_product_variant"/>
+                  <field name="pricelist_id" context="{'pricelist': self}" filter_domain="[]" groups="product.group_product_pricelist"/>
+                  <filter invisible="1" string="Late Activities" name="activities_overdue"
+                      domain="[('my_activity_date_deadline', '&lt;', context_today().strftime('%Y-%m-%d'))]"
+                      help="Show all records which has next action date is before today"/>
+                  <filter invisible="1" string="Today Activities" name="activities_today"
+                      domain="[('my_activity_date_deadline', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                  <filter invisible="1" string="Future Activities" name="activities_upcoming_all"
+                      domain="[('my_activity_date_deadline', '&gt;', context_today().strftime('%Y-%m-%d'))
+                      ]"/> -->
+                  <!-- <separator/>
+                  <filter string="Favorites" name="favorites" domain="[('priority','=','1')]"/>
+                  <separator/>
+                  <filter string="Warnings" name="activities_exception"
+                          domain="[('activity_exception_decoration', '!=', False)]"/>
+                  <separator/>
+                  <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+                  <group expand="1" string="Group By">
+                      <filter string="Product Type" name="type" context="{'group_by':'type'}"/>
+                      <filter string="Product Category" name="categ_id" context="{'group_by':'categ_id'}"/>
+                  </group> -->
+              </search>
+          </field>
+      </record>
+
+      <record id="sucasa_product_template_action" model="ir.actions.act_window">
+          <field name="name">Products</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">product.template</field>
+          <field name="view_mode">kanban</field>
+          <field name="view_id" ref="sucasa_product_template_kanban_view"/>
+          <field name="search_view_id" ref="sucasa_product_template_search_view"/>
+          <field name="context">{"search_default_filter_to_sell":0}</field>
+          <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                  Create a new product
+              </p><p>
+                  You must define a product for everything you sell or purchase,
+                  whether it's a storable product, a consumable or a service.
+              </p>
+          </field>
+      </record>
+
+
       <menuitem
           id="menu_pos_sucasa_pay_notification"
           action="sucasa.action_sucasa_pay_notification"
           parent="sucasa.menu_pos_sucasa"
+          sequence="2"/>
+
+      <menuitem
+          id="menu_pos_sucasa_consulta_productos"
+          action="sucasa.sucasa_product_template_action"
+          parent="sucasa.menu_pos_sucasa_extra"
           sequence="2"/>
 
 
