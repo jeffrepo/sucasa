@@ -30,6 +30,7 @@ class PosSession(models.Model):
         # logging.warning(self.config_id)
         # logging.warning(self.payment_method_ids.actualizar_catalogos(self.config_id))
         self.config_id.get_available_banks(self.config_id)
+        self.get_all_product_extend_list_session()
         self.payment_method_ids.actualizar_catalogos(self.config_id)
         res = super(PosSession, self).action_pos_session_open()
         return res

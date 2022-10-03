@@ -26,6 +26,8 @@ odoo.define('sucasa.OrderReceipt', function(require) {
               'reference2':'',
               'reference3':'',
               'legal_info':'',
+              'comision':0,
+              'iva_comision':0
             });
 
             var state = this.state;
@@ -39,12 +41,14 @@ odoo.define('sucasa.OrderReceipt', function(require) {
               console.log('Entramos al RPC');
               console.log(ticket_values);
               if(ticket_values){
-                state.transaccion_id = ticket_values['transaccion_id']
-                state.provider_authorizacion = ticket_values['provider_authorizacion']
-                state.reference1 = ticket_values['reference1']
-                state.reference2 = ticket_values['reference2']
-                state.reference3 = ticket_values['reference3']
-                state.legal_info = ticket_values['legal_info']
+                state.transaccion_id = ticket_values['transaccion_id'];
+                state.provider_authorizacion = ticket_values['provider_authorizacion'];
+                state.reference1 = ticket_values['reference1'];
+                state.reference2 = ticket_values['reference2'];
+                state.reference3 = ticket_values['reference3'];
+                state.legal_info = ticket_values['legal_info'];
+                state.comision = ticket_values['comision'];
+                state.iva_comision = ticket_values['iva_comision'];
               }
 
             });

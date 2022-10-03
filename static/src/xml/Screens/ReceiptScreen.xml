@@ -123,24 +123,26 @@
                 <span t-esc="env.pos.format_currency(receipt.total_rounded)"/>
               </td>
             </tr>
-
-            <tr style="height:25px;">
-              <td>
-                Comisión:
-              </td>
-              <td>
-                <span />
-              </td>
-            </tr>
-
-            <tr style="height:25px;">
-              <td>
-                IVA comisión:
-              </td>
-              <td>
-                <span/>
-              </td>
-            </tr>
+            <t t-if="state.comision">
+              <tr style="height:25px;">
+                <td>
+                  Comisión:
+                </td>
+                <td>
+                  <span t-esc="state.comision"/>
+                </td>
+              </tr>
+            </t>
+            <t t-if="state.iva_comision">
+              <tr style="height:25px;">
+                <td>
+                  IVA comisión:
+                </td>
+                <td>
+                  <span t-esc="state.iva_comision"/>
+                </td>
+              </tr>
+            </t>
 
             <t t-if="state.legal_info">
               <tr style="height:auto">
