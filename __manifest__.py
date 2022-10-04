@@ -10,7 +10,7 @@
     'description': """
 
 """,
-    'depends': ['base','point_of_sale','product'],
+    'depends': ['base','point_of_sale','product','web'],
     'data': [
         'views/pos_config_view.xml',
         'views/sucasa_view.xml',
@@ -31,7 +31,10 @@
             'sucasa/static/src/xml/ProductScreenButtonsViews.xml',
             'sucasa/static/src/xml/ViewsPopups/CustomPopupView.xml',
             'sucasa/static/src/xml/Screens/ReceiptScreen.xml'
-        ]
+        ],
+        'web.assets_backend': [
+            'sucasa/static/src/js/search_bar.js',
+        ],
     },
     'installable': True,
     'auto_install': False,
