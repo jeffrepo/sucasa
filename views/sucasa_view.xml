@@ -212,20 +212,22 @@
     text-align: center;">
                                   <div class="o_kanban_record_top mb-0">
                                       <div class="o_kanban_record_headings">
-                                          <strong class="o_kanban_record_title" style="font-size:15px">
+                                          <strong class="o_kanban_record_title" style="font-size:36px">
                                               <field name="name"/>
                                           </strong>
                                       </div>
                                       <field name="priority" widget="priority"/>
                                   </div>
-                                  <t t-if="record.default_code.value">[<field name="default_code"/>]</t>
+                                  <t t-if="record.default_code.value"><strong><div class="o_kanban_record_title" style="font-size:36px">[<field name="default_code"/>]</div></strong></t>
                                   <div t-if="record.product_variant_count.value &gt; 1" groups="product.group_product_variant">
                                       <strong>
                                           <t t-esc="record.product_variant_count.value"/> Variants
                                       </strong>
                                   </div>
+                                  <!-- <div style="height:200px"/> -->
                                   <div name="product_lst_price" class="mt-1">
-                                      Precio: <field name="list_price" widget="monetary" options="{'currency_field': 'currency_id', 'field_digits': True}" style="font-size:18px"></field>
+                                     <strong>
+                                         <div class="o_kanban_record_title" style="font-size:70px;background-color:#E6E6E6">Precio: <field name="list_price" widget="monetary" options="{'currency_field': 'currency_id', 'field_digits': True}" style="font-size:36px"></field></div></strong>
                                   </div>
                               </div>
                           </div>
