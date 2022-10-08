@@ -21,6 +21,8 @@
                     <field name="reference_1"/>
                     <field name="reference_2"/>
                     <field name="reference_3"/>
+                    <field name="comision"/>
+                    <field name="iva_comision"/>
                   </group>
 
                 </page>

@@ -19,3 +19,4 @@ class ProductTemplate(models.Model):
     carrier_id = fields.Many2one("sucasa.carrier","Carrier")
     legal_information = fields.Char("Lega Information")
     support_query = fields.Boolean(string='Support Query')
+    extra_charge_end_client = fields.Float(string='Extra charge end client')  

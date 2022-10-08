@@ -14,6 +14,7 @@ odoo.define('sucasa.ProductScreen', function(require) {
     models.load_fields('product.product', 'reference3');
     models.load_fields('product.product', 'support_query');
     models.load_fields('pos.session', 'sessionid');
+    models.load_fields('product.product', 'extra_charge_end_client');
 
 
     const SuCasaProductScreen = (ProductScreen) =>
@@ -78,6 +79,8 @@ odoo.define('sucasa.ProductScreen', function(require) {
           'pos_transaccion_id':'',
           'amount':0,
           'no_session':0,
+          'comision':0,
+          'iva_comision':0,
         }
         var order = self.env.pos.get_order();
         var value_red_id = false, support_query = false;
@@ -93,7 +96,12 @@ odoo.define('sucasa.ProductScreen', function(require) {
             product_dicc['reference3'] = order.get_reference3();
             product_dicc['amount'] = prod.price;
             product_dicc['no_session'] = order.pos_session_id;
-
+            product_dicc['comision'] = prod.product.extra_charge_end_client;
+            product_dicc['iva_comision'] = (prod.product.extra_charge_end_client - (prod.product.extra_charge_end_client/1.16)).toFixed(2)
+            order.set_comision(product_dicc['comision']);
+            order.set_iva_comision(product_dicc['iva_comision']);
+            console.log('Queriendo ver los datos de la orden');
+            console.log(order);
             if(prod.product.support_query == true){
               support_query = true;
             }
@@ -197,8 +205,6 @@ odoo.define('sucasa.ProductScreen', function(require) {
         super._onClickPay();
         // this.showScreen('ProductScreen');
         this.codeProducts();
-
-
 
       }
 

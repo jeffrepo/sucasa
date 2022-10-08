@@ -149,7 +149,11 @@ class PosConfig(models.Model):
                         if len(odoo_product_ids) > 0:
                             for p in odoo_product_ids:
                                 odoo_product_dic[p.red_id] = p
-
+                        logging.warning('Que es el diccionario productos por que ni idea ----------')
+                        logging.warning(xml_json["ProductExtended"])
+                        logging.warning('')
+                        logging.warning('')
+                        logging.warning('')
                         for product in xml_json["ProductExtended"]:
                             if int(product["ProductId"]) not in odoo_product_dic:
                                 product_dic = {'red_id': product["ProductId"],
@@ -162,7 +166,8 @@ class PosConfig(models.Model):
                                 'validate_ref2': product["ValidateRef2"],
                                 'validate_ref3': product["ValidateRef3"],
                                 'list_price': product["Amount"],
-                                'legal_information': product["LegalInformation"]}
+                                'legal_information': product["LegalInformation"],
+                                'extra_charge_end_client': product['ExtraChargeEndClient']}
 
                                 if "Reference1" in product:
                                     product_dic["reference1"] = product["Reference1"]
@@ -177,7 +182,8 @@ class PosConfig(models.Model):
                                     product_dic["categ_id"] = odoo_categ_dic[int(product["CategoryId"])].id if int(product["CategoryId"]) in odoo_categ_dic else False
                                 if "carrier_id" in product:
                                     product_dic["carrier_id"] = odoo_carriers_dic[int(product["CarrierId"])].id if int(product["CarrierId"]) in odoo_carriers_dic else False
-
+                                if 'extra_charge_end_client' in product_dic:
+                                    product_dic['extra_charge_end_client'] = product['ExtraChargeEndClient']
 
                                 product_template_id = self.env['product.template'].create(product_dic)
                             else:
@@ -192,7 +198,9 @@ class PosConfig(models.Model):
                                 'validate_ref3': product["ValidateRef3"],
                                 'list_price': product["Amount"],
                                 'carrier_id': odoo_carriers_dic[int(product["CarrierId"])].id,
-                                'legal_information': product["LegalInformation"]}
+                                'legal_information': product["LegalInformation"],
+                                'extra_charge_end_client': product['ExtraChargeEndClient']}
+
                                 if "Reference1" in product:
                                     product_dic["reference1"] = product["Reference1"]
                                 if "Reference2" in product:
@@ -207,7 +215,8 @@ class PosConfig(models.Model):
                                     product_dic["categ_id"] = odoo_categ_dic[int(product["CategoryId"])].id if int(product["CategoryId"]) in odoo_categ_dic else False
                                 if "carrier_id" in product:
                                     product_dic["carrier_id"] = odoo_carriers_dic[int(product["CarrierId"])].id if int(product["CarrierId"]) in odoo_carriers_dic else False
-
+                                if 'ExtraChargeEndClient' in product:
+                                    product_dic['extra_charge_end_client'] = product['ExtraChargeEndClient']
                                 odoo_product_dic[int(product["ProductId"])].update(product_dic)
         return products
 

@@ -48,6 +48,9 @@ odoo.define('sucasa.ProductScreenButtons', function(require) {
         this.set_reference1();
         this.set_reference2();
         this.set_reference3();
+        this.set_transaccion();
+        this.set_comision();
+        this.set_iva_comision();
       },
 
       export_as_JSON: function() {
@@ -55,6 +58,11 @@ odoo.define('sucasa.ProductScreenButtons', function(require) {
         json.reference1 = this.get_reference1();
         json.reference2 = this.get_reference2();
         json.reference3 = this.get_reference3();
+        json.comision = this.get_comision();
+        json.iva_comision = this.get_iva_comision();
+        // json.transaccion = this.get_transaccion();
+        console.log('Esta es una prueba 1');
+        console.log(this.get_transaccion());
 
         return json;
       },
@@ -87,8 +95,37 @@ odoo.define('sucasa.ProductScreenButtons', function(require) {
         this.set({
           reference3: reference3
         });
-      }
+      },
 
+      get_transaccion: function(){
+        return this.get('transaccion');
+      },
+
+      set_transaccion: function(transaccion){
+        this.set({
+          transaccion: transaccion
+        });
+      },
+
+      get_comision: function(){
+        return this.get('comision');
+      },
+
+      set_comision: function(comision){
+        this.set({
+          comision: comision
+        });
+      },
+
+      get_iva_comision: function(){
+        return this.get('iva_comision');
+      },
+
+      set_iva_comision: function(iva_comision){
+        this.set({
+          iva_comision: iva_comision
+        });
+      }
 
     });
 
