@@ -19,6 +19,7 @@
           height:auto;
           width:100%
           }
+          position: relative; left: 1.2em; font-size: 150%; zoom: 90%;
         </style>
         <t t-if="receipt.company.logo">
           <img class="pos-receipt-logo" t-att-src="receipt.company.logo" alt="Logo"/>
@@ -56,24 +57,24 @@
           <table style="width:100%">
             <tr>
                 <td></td>
-                <td colspan='2' align="right">
-                    <span t-esc='receipt.date.localestring'/>
+                <td colspan='2' style="text-align:right" class="pos-receipt-contact">
+                    <span style="text-align:right" t-esc='receipt.date.localestring'/>
                 </td>
             </tr>
               
             <tr>
-                <td>Cajero</td>
-                <td align="right"><t t-esc="receipt.cashier" /></td>
+                <td style="text-align:left" class="pos-receipt-contact">Cajero</td>
+                <td style="text-align:right" class="pos-receipt-contact"><t t-esc="receipt.cashier" /></td>
             </tr>
               
             <tr>
-                <td>Turno #</td>
-                <td align="right"><span t-esc="env.pos.pos_session.name"/></td>
+                <td style="text-align:left" class="pos-receipt-contact">Turno #</td>
+                <td style="text-align:right" class="pos-receipt-contact"><span t-esc="env.pos.pos_session.name"/></td>
             </tr>
               
             <tr>
-                <td>Folio</td>
-                <td align="right"><span t-esc="receipt.name" /></td>
+                <td style="text-align:left" class="pos-receipt-contact">Folio</td>
+                <td style="text-align:right" class="pos-receipt-contact"><span t-esc="receipt.name" /></td>
             </tr>   
 
             
@@ -83,10 +84,10 @@
             <br/>
             <table style="width:100%">
                 <tr>
-                    <td>CANT.</td>
-                    <td style="text-align:center;">DESCRIPCIÓN</td>
-                    <td>PRECIO</td>
-                    <td>IMPORTE</td>
+                    <td class="pos-receipt-contact">CANT.</td>
+                    <td style="text-align:center;" class="pos-receipt-contact">DESCRIPCIÓN</td>
+                    <td class="pos-receipt-contact">PRECIO</td>
+                    <td class="pos-receipt-contact">IMPORTE</td>
                 </tr>
                 
                 <tr>
@@ -97,20 +98,20 @@
                 
                 <tr t-foreach="receipt.orderlines" t-as="l">
                     <td align="center">
-                        <span t-esc="l.quantity"></span>
+                        <span t-esc="l.quantity" class="pos-receipt-contact"></span>
                     </td>
                     
-                    <td align="left" style="height:auto; word-break: break-all">
-                        <span t-esc="l.product_name_wrapped[0]"/>
-                        <span t-esc="l.barcode"/>
-                    </td>
-                    
-                    <td align="right">
-                        <span t-esc="env.pos.format_currency(l.price)"/>
+                    <td align="left" style="height:auto; word-break: break-all" class="pos-receipt-contact">
+                        <span t-esc="l.product_name_wrapped[0]" class="pos-receipt-contact"/>
+                        <span t-esc="l.barcode" class="pos-receipt-contact"/>
                     </td>
                     
                     <td align="right">
-                        <span t-esc="env.pos.format_currency(l.price * l.quantity)"/>
+                        <span t-esc="env.pos.format_currency(l.price)" class="pos-receipt-contact"/>
+                    </td>
+                    
+                    <td align="right">
+                        <span t-esc="env.pos.format_currency(l.price * l.quantity)" class="pos-receipt-contact"/>
                     </td>
                 </tr>
                 
@@ -119,11 +120,11 @@
                 </tr>
                 
                 <tr>
-                    <td colspan="2">NO. DE ARTICULOS:</td>
+                    <td colspan="2" class="pos-receipt-contact">NO. DE ARTICULOS:</td>
                     <td colspan="2">
                         <t t-if="state.cantidad_productos">
                             <td style="text-align:left">
-                              <span t-esc="state.cantidad_productos"/>
+                              <span t-esc="state.cantidad_productos" class="pos-receipt-contact"/>
                             </td>                          
                         </t>
                     </td>
@@ -137,7 +138,7 @@
 
                 <t t-if="state.transaccion_id">
                   <tr>
-                    <td>
+                    <td class="pos-receipt-contact">
                       Transacción:
                     </td>
                     <td>
@@ -148,7 +149,7 @@
 
                 <t t-if="state.provider_authorizacion">
                   <tr style="height:25px;">
-                    <td>
+                    <td class="pos-receipt-contact">
                       Autorización:
                     </td>
                     <td style="word-break: break-all">
@@ -159,7 +160,7 @@
 
                 <t t-if="state.reference1">
                   <tr style="height:25px;">
-                    <td>
+                    <td class="pos-receipt-contact">
                       Referencia 1:
                     </td>
                     <td>
@@ -170,7 +171,7 @@
 
                 <t t-if="state.reference2">
                   <tr style="height:25px;">
-                    <td>
+                    <td class="pos-receipt-contact">
                       Referencia 2:
                     </td>
                     <td>
@@ -182,7 +183,7 @@
 
                 <t t-if="state.reference3">
                   <tr style="height:25px;">
-                    <td>
+                    <td class="pos-receipt-contact">
                       Referencia 3:
                     </td>
                     <td style="height:auto; word-break: break-all">
@@ -193,7 +194,7 @@
 
                 <t t-if="state.comision">
                   <tr style="height:25px;">
-                    <td>
+                    <td class="pos-receipt-contact">
                       Comisión:
                     </td>
                     <td>
@@ -203,7 +204,7 @@
                 </t>
                 <t t-if="state.iva_comision">
                   <tr style="height:25px;">
-                    <td>
+                    <td class="pos-receipt-contact">
                       IVA comisión:
                     </td>
                     <td>
@@ -214,7 +215,7 @@
 
                 <t t-if="state.legal_info">
                   <tr style="height:auto">
-                    <td colspan="2" class="texto-justificado">
+                    <td colspan="2" class="pos-receipt-contact">
                       <span t-esc="state.legal_info"/>
                     </td>
                   </tr>
@@ -231,25 +232,25 @@
             
             <table style="width:100%">
                 <tr style="height:25px; ">
-                  <td style="text-align:right; width:205px">
+                  <td style="text-align:right; width:205px" class="pos-receipt-contact">
                     TOTAL:
                   </td>
-                  <td style="text-align:right">
+                  <td style="text-align:right" class="texto-justificado" >
                     <span t-esc="env.pos.format_currency(receipt.total_rounded)"/>
                   </td>
                 </tr>
                 
                 <tr t-foreach="receipt.paymentlines" t-as="linee" t-key="linee.cid">
-                    <td style="text-align:right">
+                    <td style="text-align:right" class="pos-receipt-contact">
                         <span t-esc="linee.name">  </span>
                     </td>
-                    <td style="text-align:right">
+                    <td style="text-align:right" class="pos-receipt-contact">
                         <span t-esc="env.pos.format_currency(linee.amount)"/>
                     </td>
                 </tr>
                 
-                <tr style="height:25px;">
-                  <td style="text-align:right">
+                <tr style="height:25px;" class="pos-receipt-contact">
+                  <td style="text-align:right" class="pos-receipt-contact">
                     SU CAMBIO:
                   </td>
                   <td style="text-align:right">
@@ -260,7 +261,7 @@
             <br/>
             
             <div class="pos-receipt-contact">
-                <span style="text-align:center; width:100%">GRACIAS POR SU COMPRA <br/>
+                <span style="text-align:center; width:100%" class="pos-receipt-contact">GRACIAS POR SU COMPRA <br/>
                 SU CASA SIEMPRE MÁS AHORRO</span>
             </div>
             
@@ -273,3 +274,4 @@
   </t>
 
 </templates>
+
