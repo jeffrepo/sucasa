@@ -102,6 +102,7 @@ odoo.define('sucasa.ProductScreen', function(require) {
             order.set_iva_comision(product_dicc['iva_comision']);
             console.log('Queriendo ver los datos de la orden');
             console.log(order);
+//             prod.set_productBarcode(prod.product.barcode);
             if(prod.product.support_query == true){
               support_query = true;
             }

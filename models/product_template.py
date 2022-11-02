@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, tools, _, SUPERUSER_ID
+import logging
 
 class ProductTemplate(models.Model):
     _inherit = "product.template"

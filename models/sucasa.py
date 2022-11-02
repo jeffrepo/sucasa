@@ -10,7 +10,32 @@ import base64
 import logging
 import xmltodict, json
 
+class SucasaConsultaProducto(models.Model):
+    _name = 'sucasa.consulta_producto'
 
+    name = fields.Char('Codigo barra')
+    producto_id = fields.Many2one('product.template','Producto')
+    color = fields.Integer()
+
+
+    @api.depends('name','producto_id')
+    def _oncha_name(self):
+        for record in self:
+            record.write({})
+            logging.warning(record.producto_id)
+            logging.warning(self._origin)
+            logging.warning(self.env.context)
+            logging.warning('hola')
+
+
+
+    @api.onchange('name','producto_id')
+    def _onchange_name(self):
+        self.write({})
+        logging.warning('HOLA')
+        logging.warning(self.producto_id)
+
+        # logging.warning(self.name)
 
 class SucasaCarrier(models.Model):
     _name = 'sucasa.carrier'
@@ -47,6 +72,9 @@ class PayNotification(models.Model):
             xml_json = self.config_id.red_autentication('GetAvailableBanks', False)
             if 'ResponseCode' in xml_json:
                 response_code_banks = int(xml_json['ResponseCode'])
+        
+        logging.warning('BANCOS')
+        logging.warning(response_code_banks)
 
         if (response_code_payment_method and response_code_banks) == 000:
             logging.warning('Se ha tenido buena respuesta de los metodos anteriores')

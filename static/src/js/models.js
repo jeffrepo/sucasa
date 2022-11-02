@@ -7,6 +7,7 @@ odoo.define('sucasa.models', function(require) {
     // var models = require('point_of_sale.models');
     const rpc = require('web.rpc');
     var { Gui } = require('point_of_sale.Gui');
+    var exports = {};
 
     var posmodel_super = models.PosModel.prototype;
     models.PosModel = models.PosModel.extend({
@@ -27,6 +28,7 @@ odoo.define('sucasa.models', function(require) {
 
 
         sending_values_red_mas: async function(dicc){
+            console.log('Enviando datos a función value_fields python')
             return await this.rpc({
                 model: 'pos.order',
                 method: 'value_fields',
@@ -89,5 +91,50 @@ odoo.define('sucasa.models', function(require) {
 
 
     });
+    
+    
+    var _super_orderline = models.Orderline.prototype;
+    models.Orderline = models.Orderline.extend({
+        export_for_printing: function() {
+            var line = _super_orderline.export_for_printing.apply(this,arguments);
+            line.barcode = this.get_product().barcode;
+            return line;
+        },
+    });
+    
+//     var _super_order_line = models.Orderline.prototype;
+
+//     models.Orderline = models.Orderline.extend({
+//         export_as_JSON : function(){
+//             console.log('EXPORT AS JSON SUCASA');;
+//             var new_json = _super_order_line.export_as_JSON.apply(this);
+// //             new_json['barcode'] = this.get_productBarcode() ? this.get_productBarcode() : false;
+//             console.log(this.get_product());
+            
+//             return new_json;
+//         },
+// //         initialize: function() {
+// //             _super_order_line.initialize.apply(this,arguments);
+// //             this.set_productBarcode();
+// //         },
+// //         get_productBarcode: function(){
+// //             return this.get('barcode');
+// //         },
+
+// //         set_productBarcode: function(barcode){
+// //             this.set({
+// //               barcode: barcode
+// //             });
+// //         },
+
+//         export_for_printing: function(){
+// //             _super_order_line.export_for_printing.apply(this,arguments);
+//             var new_json = _super_order_line.export_as_JSON.apply(this);
+//             console.log('Buscando barcode')
+//             console.log(this.get_product())
+// //             new_json['barcode']= this.get_product().barcode;
+//             return new_json; 
+//         },
+//     });
 
 });
