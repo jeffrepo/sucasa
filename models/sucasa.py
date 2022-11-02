@@ -72,6 +72,9 @@ class PayNotification(models.Model):
             xml_json = self.config_id.red_autentication('GetAvailableBanks', False)
             if 'ResponseCode' in xml_json:
                 response_code_banks = int(xml_json['ResponseCode'])
+        
+        logging.warning('BANCOS')
+        logging.warning(response_code_banks)
 
         if (response_code_payment_method and response_code_banks) == 000:
             logging.warning('Se ha tenido buena respuesta de los metodos anteriores')

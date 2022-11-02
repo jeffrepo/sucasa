@@ -105,20 +105,20 @@ class PosConfig(models.Model):
     # Se ejecuta 1 vez al dia, se ejecuta antes de SubmitPayNotification (_submit_pay_notification)
     def get_available_banks(self, config_id):
         list_banks_name = []
-        if config_id:
+        if config_id and config_id.postoken:
             xml_json = config_id.red_autentication('GetAvailableBanks', False)
+            if xml_json:
+                for bank_name in xml_json['AvailableBanks']['string']:
+                    banks = self.env['res.bank'].search([])
 
-            for bank_name in xml_json['AvailableBanks']['string']:
-                banks = self.env['res.bank'].search([])
+                    for bank in banks:
+                        if bank.name not in list_banks_name:
+                            list_banks_name.append(bank.name)
 
-                for bank in banks:
-                    if bank.name not in list_banks_name:
-                        list_banks_name.append(bank.name)
-
-                if bank_name not in list_banks_name:
-                    self.env['res.bank'].create({
-                    'name':bank_name
-                    })
+                    if bank_name not in list_banks_name:
+                        self.env['res.bank'].create({
+                        'name':bank_name
+                        })
 
         return True
 
@@ -222,344 +222,345 @@ class PosConfig(models.Model):
 
     def red_autentication(self,method,var_x):
         for pos in self:
-            data = False
-            attr_qname = etree.QName("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation")
-            SOAPN_NS = "{http://schemas.xmlsoap.org/soap/envelope/}"
-            NSMAP = {
-                 'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
-            }
-            SOAP_NS = 'http://schemas.xmlsoap.org/soap/envelope/'
-            ns_map = {'soapenv': SOAP_NS}
+            if pos.posid and pos.clerkcode and pos.postoken:
+                data = False
+                attr_qname = etree.QName("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation")
+                SOAPN_NS = "{http://schemas.xmlsoap.org/soap/envelope/}"
+                NSMAP = {
+                     'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
+                }
+                SOAP_NS = 'http://schemas.xmlsoap.org/soap/envelope/'
+                ns_map = {'soapenv': SOAP_NS}
 
 
-            Envelope = etree.Element(etree.QName(SOAP_NS, 'Envelope'), nsmap=ns_map)
-            TagBody = etree.SubElement(Envelope,SOAPN_NS+"Body",{})
-            TagMethod = etree.SubElement(TagBody, method, {'xmlns':"http://rpmmx.net/"})
-            TagPosCredentials = etree.SubElement(TagMethod, "posCredentials", {})
-            TagClientId = etree.SubElement(TagPosCredentials, "ClientId",nsmap=ns_map)
-            TagClientId.text = pos.clientid
-            TagStoreId = etree.SubElement(TagPosCredentials, "StoreId",{})
-            TagStoreId.text = pos.storeid
-            TagPosId = etree.SubElement(TagPosCredentials, "PosId",{})
-            TagPosId.text = pos.posid
-            TagClerkCode = etree.SubElement(TagPosCredentials, "ClerkCode",{})
-            TagClerkCode.text = pos.clerkcode
-            TagPosToken = etree.SubElement(TagPosCredentials, "PosToken",{})
-            TagPosToken.text = pos.postoken
+                Envelope = etree.Element(etree.QName(SOAP_NS, 'Envelope'), nsmap=ns_map)
+                TagBody = etree.SubElement(Envelope,SOAPN_NS+"Body",{})
+                TagMethod = etree.SubElement(TagBody, method, {'xmlns':"http://rpmmx.net/"})
+                TagPosCredentials = etree.SubElement(TagMethod, "posCredentials", {})
+                TagClientId = etree.SubElement(TagPosCredentials, "ClientId",nsmap=ns_map)
+                TagClientId.text = pos.clientid
+                TagStoreId = etree.SubElement(TagPosCredentials, "StoreId",{})
+                TagStoreId.text = pos.storeid
+                TagPosId = etree.SubElement(TagPosCredentials, "PosId",{})
+                TagPosId.text = pos.posid
+                TagClerkCode = etree.SubElement(TagPosCredentials, "ClerkCode",{})
+                TagClerkCode.text = pos.clerkcode
+                TagPosToken = etree.SubElement(TagPosCredentials, "PosToken",{})
+                TagPosToken.text = pos.postoken
 
-            if method == "ChangeClerkCode":
-                TagNewClerkCode = etree.SubElement(TagMethod, "newClerkCode",nsmap=ns_map)
-                TagNewClerkCode.text = pos.newclerkcode
+                if method == "ChangeClerkCode":
+                    TagNewClerkCode = etree.SubElement(TagMethod, "newClerkCode",nsmap=ns_map)
+                    TagNewClerkCode.text = pos.newclerkcode
 
-            if method == 'CheckReference' :
-                logging.warning('CheckReference')
+                if method == 'CheckReference' :
+                    logging.warning('CheckReference')
 
-                TagCheckReferenceReq = etree.SubElement(TagMethod, 'checkReferenceReq', nsmap=ns_map)
-                TagProductId = etree.SubElement(TagCheckReferenceReq, 'ProductId', nsmap=ns_map)
-                TagReference1 = etree.SubElement(TagCheckReferenceReq, 'Reference1', nsmap=ns_map)
-                TagReference3 = etree.SubElement(TagCheckReferenceReq, 'Reference3', nsmap=ns_map)
-                TagPosTransactionId = etree.SubElement(TagCheckReferenceReq, 'PosTransactionId', nsmap=ns_map)
-                if len(var_x)>0:
-                    if var_x[0]['product_id']:
-                        TagProductId.text = str(var_x[0]['product_id'])
-                        # TagProductId.text = str(100)
-                    if var_x[0]['reference1']:
-                        TagReference1.text = str(var_x[0]['reference1'])
-                        # TagReference1.text = "016137402003662012310000007413"
-                    if var_x[0]['reference3']:
-                        TagReference3.text = str(var_x[0]['reference3'])
-                    else:
-                        TagReference3.text = ''
-                    if var_x[0]['pos_transaccion_id']:
-                        # TagPosTransactionId.text = '9'
-                        TagPosTransactionId.text = str(var_x[0]['pos_transaccion_id'])
-
-
-            if method == 'Sale':
-                TagSaleRequest = etree.SubElement(TagMethod, 'saleRequest', nsmap=ns_map)
-                TagProductId = etree.SubElement(TagSaleRequest, 'ProductId', nsmap=ns_map)
-                TagAmount = etree.SubElement(TagSaleRequest, 'Amount', nsmap=ns_map)
-                TagReference1 = etree.SubElement(TagSaleRequest, 'Reference1', nsmap=ns_map)
-                TagReference2 = etree.SubElement(TagSaleRequest, 'Reference2', nsmap=ns_map)
-                TagReference3 = etree.SubElement(TagSaleRequest, 'Reference3', nsmap=ns_map)
-                TagPosTransactionId = etree.SubElement(TagSaleRequest, 'PosTransactionId', nsmap=ns_map)
-                TagSession = etree.SubElement(TagSaleRequest, 'Session', nsmap=ns_map)
-                if len(var_x)>0:
-                    logging.warning('Welcome to Method Sale')
-                    logging.warning(var_x)
-                    if var_x[0]['product_id']:
-                        TagProductId.text = str(var_x[0]['product_id'])
-                        # TagProductId.text = '1'
-                    if var_x[0]['amount']:
-                        TagAmount.text = str(var_x[0]['amount'])
-                        # TagAmount.text = '20'
-                    if var_x[0]['reference1']:
-                        TagReference1.text = str(var_x[0]['reference1'])
-                    else:
-                        TagReference1.text = ''
-                    if var_x[0]['reference2']:
-                        TagReference2.text = str(var_x[0]['reference2'])
-                    else:
-                        TagReference2.text = ''
-                    if var_x[0]['reference3']:
-                        TagReference3.text = str(var_x[0]['reference3'])
-                    else:
-                        TagReference3.text = ''
-                    if var_x[0]['pos_transaccion_id']:
-                        TagPosTransactionId.text=str(var_x[0]['pos_transaccion_id'])
-                    if var_x[0]['session']:
-                        TagSession.text = str(var_x[0]['session'])
-
-            if method == 'CheckSale':
-                TagSaleRequest = etree.SubElement(TagMethod, 'saleRequest', nsmap=ns_map)
-                TagProductId = etree.SubElement(TagSaleRequest, 'ProductId', nsmap=ns_map)
-                TagAmount = etree.SubElement(TagSaleRequest, 'Amount', nsmap=ns_map)
-                TagReference1 = etree.SubElement(TagSaleRequest, 'Reference1', nsmap=ns_map)
-                TagReference2 = etree.SubElement(TagSaleRequest, 'Reference2', nsmap=ns_map)
-                TagReference3 = etree.SubElement(TagSaleRequest, 'Reference3', nsmap=ns_map)
-                TagPosTransactionId = etree.SubElement(TagSaleRequest, 'PosTransactionId', nsmap=ns_map)
-                TagSession = etree.SubElement(TagSaleRequest, 'Session', nsmap=ns_map)
-                if len(var_x)>0:
-                    if var_x[0]['product_id']:
-                        TagProductId.text = str(var_x[0]['product_id'])
-                        # TagProductId.text = '1'
-                    if var_x[0]['amount']:
-                        TagAmount.text = str(var_x[0]['amount'])
-                        # TagAmount.text = '20'
-                    if var_x[0]['reference1']:
-                        TagReference1.text = str(var_x[0]['reference1'])
-                    else:
-                        TagReference1.text = ''
-                    if var_x[0]['reference2']:
-                        TagReference2.text = str(var_x[0]['reference2'])
-                    else:
-                        TagReference2.text = ''
-                    if var_x[0]['reference3']:
-                        TagReference3.text = str(var_x[0]['reference3'])
-                    else:
-                        TagReference3.text = ''
-                    if var_x[0]['pos_transaccion_id']:
-                        TagPosTransactionId.text=str(var_x[0]['pos_transaccion_id'])
-                    if var_x[0]['session']:
-                        TagSession.text = str(var_x[0]['session'])
-
-            if method == 'GetBalanceByBag':
-                TagBagId = etree.SubElement(TagMethod, 'bagId', nsmap=ns_map)
-                TagBagId.text = str(var_x)
-                # TagBagId.text = '3'
-
-            if method == 'SubmitPayNotification':
-                TagAmount = etree.SubElement(TagMethod, 'amount', nsmap=ns_map)
-                TagBank = etree.SubElement(TagMethod, 'bank', nsmap=ns_map)
-                TagDocNumber = etree.SubElement(TagMethod, 'documentNumber', nsmap=ns_map)
-                TagDate = etree.SubElement(TagMethod, 'documentDateyyyyMMdd', nsmap=ns_map)
-                TagOrigAccountNumber = etree.SubElement(TagMethod, 'originAccountNumber', nsmap=ns_map)
-                TagPaymentMethod = etree.SubElement(TagMethod, 'paymentMethod', nsmap=ns_map)
-                TagBagId = etree.SubElement(TagMethod, 'bagId', nsmap=ns_map)
-                if var_x:
-                    if var_x['amount']:
-                        TagAmount.text = str(var_x['amount'])
-                    if var_x['bank']:
-                        TagBank.text = var_x['bank']
-                    if var_x['document_number']:
-                        TagDocNumber.text = str(var_x['document_number'])
-                    if var_x['document_date']:
-                        TagDate.text = str(var_x['document_date'])
-                    if var_x['origin_account_number']:
-                        TagOrigAccountNumber.text = str(var_x['origin_account_number'])
-                    if var_x['payment_method']:
-                        TagPaymentMethod.text = str(var_x['payment_method'])
-                    if var_x['bag_id']:
-                        TagBagId.text = str(var_x['bag_id'])
+                    TagCheckReferenceReq = etree.SubElement(TagMethod, 'checkReferenceReq', nsmap=ns_map)
+                    TagProductId = etree.SubElement(TagCheckReferenceReq, 'ProductId', nsmap=ns_map)
+                    TagReference1 = etree.SubElement(TagCheckReferenceReq, 'Reference1', nsmap=ns_map)
+                    TagReference3 = etree.SubElement(TagCheckReferenceReq, 'Reference3', nsmap=ns_map)
+                    TagPosTransactionId = etree.SubElement(TagCheckReferenceReq, 'PosTransactionId', nsmap=ns_map)
+                    if len(var_x)>0:
+                        if var_x[0]['product_id']:
+                            TagProductId.text = str(var_x[0]['product_id'])
+                            # TagProductId.text = str(100)
+                        if var_x[0]['reference1']:
+                            TagReference1.text = str(var_x[0]['reference1'])
+                            # TagReference1.text = "016137402003662012310000007413"
+                        if var_x[0]['reference3']:
+                            TagReference3.text = str(var_x[0]['reference3'])
+                        else:
+                            TagReference3.text = ''
+                        if var_x[0]['pos_transaccion_id']:
+                            # TagPosTransactionId.text = '9'
+                            TagPosTransactionId.text = str(var_x[0]['pos_transaccion_id'])
 
 
-            xmls = etree.tostring(Envelope, encoding="UTF-8")
-            xmls = xmls.decode("utf-8").replace("&amp;", "&").encode("utf-8")
-            xmls_base64 = base64.b64encode(xmls)
-            logging.warning('XMLS')
-            logging.warning(xmls)
-            logging.warning('')
-            url = "https://wspruebas.cedixvirtual.mx/redmas_plat/WebService/SaleService.asmx"
+                if method == 'Sale':
+                    TagSaleRequest = etree.SubElement(TagMethod, 'saleRequest', nsmap=ns_map)
+                    TagProductId = etree.SubElement(TagSaleRequest, 'ProductId', nsmap=ns_map)
+                    TagAmount = etree.SubElement(TagSaleRequest, 'Amount', nsmap=ns_map)
+                    TagReference1 = etree.SubElement(TagSaleRequest, 'Reference1', nsmap=ns_map)
+                    TagReference2 = etree.SubElement(TagSaleRequest, 'Reference2', nsmap=ns_map)
+                    TagReference3 = etree.SubElement(TagSaleRequest, 'Reference3', nsmap=ns_map)
+                    TagPosTransactionId = etree.SubElement(TagSaleRequest, 'PosTransactionId', nsmap=ns_map)
+                    TagSession = etree.SubElement(TagSaleRequest, 'Session', nsmap=ns_map)
+                    if len(var_x)>0:
+                        logging.warning('Welcome to Method Sale')
+                        logging.warning(var_x)
+                        if var_x[0]['product_id']:
+                            TagProductId.text = str(var_x[0]['product_id'])
+                            # TagProductId.text = '1'
+                        if var_x[0]['amount']:
+                            TagAmount.text = str(var_x[0]['amount'])
+                            # TagAmount.text = '20'
+                        if var_x[0]['reference1']:
+                            TagReference1.text = str(var_x[0]['reference1'])
+                        else:
+                            TagReference1.text = ''
+                        if var_x[0]['reference2']:
+                            TagReference2.text = str(var_x[0]['reference2'])
+                        else:
+                            TagReference2.text = ''
+                        if var_x[0]['reference3']:
+                            TagReference3.text = str(var_x[0]['reference3'])
+                        else:
+                            TagReference3.text = ''
+                        if var_x[0]['pos_transaccion_id']:
+                            TagPosTransactionId.text=str(var_x[0]['pos_transaccion_id'])
+                        if var_x[0]['session']:
+                            TagSession.text = str(var_x[0]['session'])
 
-            headers = {"content-type": "text/xml; charset=utf-8", 'Host': "wspruebas.cedixvirtual.mx"}
-            response = requests.post(url, data = xmls, headers = headers)
-            logging.warning('status code')
-            logging.warning(response.status_code)
+                if method == 'CheckSale':
+                    TagSaleRequest = etree.SubElement(TagMethod, 'saleRequest', nsmap=ns_map)
+                    TagProductId = etree.SubElement(TagSaleRequest, 'ProductId', nsmap=ns_map)
+                    TagAmount = etree.SubElement(TagSaleRequest, 'Amount', nsmap=ns_map)
+                    TagReference1 = etree.SubElement(TagSaleRequest, 'Reference1', nsmap=ns_map)
+                    TagReference2 = etree.SubElement(TagSaleRequest, 'Reference2', nsmap=ns_map)
+                    TagReference3 = etree.SubElement(TagSaleRequest, 'Reference3', nsmap=ns_map)
+                    TagPosTransactionId = etree.SubElement(TagSaleRequest, 'PosTransactionId', nsmap=ns_map)
+                    TagSession = etree.SubElement(TagSaleRequest, 'Session', nsmap=ns_map)
+                    if len(var_x)>0:
+                        if var_x[0]['product_id']:
+                            TagProductId.text = str(var_x[0]['product_id'])
+                            # TagProductId.text = '1'
+                        if var_x[0]['amount']:
+                            TagAmount.text = str(var_x[0]['amount'])
+                            # TagAmount.text = '20'
+                        if var_x[0]['reference1']:
+                            TagReference1.text = str(var_x[0]['reference1'])
+                        else:
+                            TagReference1.text = ''
+                        if var_x[0]['reference2']:
+                            TagReference2.text = str(var_x[0]['reference2'])
+                        else:
+                            TagReference2.text = ''
+                        if var_x[0]['reference3']:
+                            TagReference3.text = str(var_x[0]['reference3'])
+                        else:
+                            TagReference3.text = ''
+                        if var_x[0]['pos_transaccion_id']:
+                            TagPosTransactionId.text=str(var_x[0]['pos_transaccion_id'])
+                        if var_x[0]['session']:
+                            TagSession.text = str(var_x[0]['session'])
 
-            if response:
-                if response.status_code == 200:
-                    if response.content:
-                        new_xml = xmltodict.parse(response.content)
-                        logging.warning('json.dumps(new_xml)')
-                        logging.warning(json.dumps(new_xml))
-                        logging.warning('')
-                        new_json1 = json.dumps(new_xml)
-                        new_json = json.loads(new_json1)
-                        if new_json:
-                            if "soap:Envelope" in new_json:
-                                if "soap:Body" in new_json["soap:Envelope"]:
-                                    if method == "GetAvailableCarriers":
-                                        if "GetAvailableCarriersResponse" in new_json["soap:Envelope"]["soap:Body"]:
-                                            if "GetAvailableCarriersResult" in new_json["soap:Envelope"]["soap:Body"]["GetAvailableCarriersResponse"]:
-                                                if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["GetAvailableCarriersResponse"]["GetAvailableCarriersResult"]:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]["GetAvailableCarriersResponse"]["GetAvailableCarriersResult"]["ResponseCode"]
-                                                    if int(response_code) == 000:
-                                                        logging.warning('transaccion exitosa')
-                                                        if "CarrierList" in new_json["soap:Envelope"]["soap:Body"]["GetAvailableCarriersResponse"]["GetAvailableCarriersResult"]:
-                                                            data =  new_json["soap:Envelope"]["soap:Body"]["GetAvailableCarriersResponse"]["GetAvailableCarriersResult"]["CarrierList"]
-                                                            # logging.warning(new_json["soap:Envelope"]["soap:Body"]["GetAvailableCarriersResponse"]["GetAvailableCarriersResult"]["CarrierList"])
+                if method == 'GetBalanceByBag':
+                    TagBagId = etree.SubElement(TagMethod, 'bagId', nsmap=ns_map)
+                    TagBagId.text = str(var_x)
+                    # TagBagId.text = '3'
 
-                                    if method == "GetProductsCategoriesByClientId":
-                                        if "GetProductsCategoriesByClientIdResponse" in new_json["soap:Envelope"]["soap:Body"]:
-                                            if "GetProductsCategoriesByClientIdResult" in new_json["soap:Envelope"]["soap:Body"]["GetProductsCategoriesByClientIdResponse"]:
-                                                if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["GetProductsCategoriesByClientIdResponse"]["GetProductsCategoriesByClientIdResult"]:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]["GetProductsCategoriesByClientIdResponse"]["GetProductsCategoriesByClientIdResult"]["ResponseCode"]
-                                                    if int(response_code) == 000:
-                                                        logging.warning('transaccion exitosa')
-                                                        if "ProductCategories" in new_json["soap:Envelope"]["soap:Body"]["GetProductsCategoriesByClientIdResponse"]["GetProductsCategoriesByClientIdResult"]:
-                                                            data = new_json["soap:Envelope"]["soap:Body"]["GetProductsCategoriesByClientIdResponse"]["GetProductsCategoriesByClientIdResult"]["ProductCategories"]
-                                                            # logging.warning(new_json["soap:Envelope"]["soap:Body"]["GetProductsCategoriesByClientIdResponse"]["GetProductsCategoriesByClientIdResult"]["ProductCategories"])
-                                        # logging.warning('GetProductsCategoriesByClientId')
+                if method == 'SubmitPayNotification':
+                    TagAmount = etree.SubElement(TagMethod, 'amount', nsmap=ns_map)
+                    TagBank = etree.SubElement(TagMethod, 'bank', nsmap=ns_map)
+                    TagDocNumber = etree.SubElement(TagMethod, 'documentNumber', nsmap=ns_map)
+                    TagDate = etree.SubElement(TagMethod, 'documentDateyyyyMMdd', nsmap=ns_map)
+                    TagOrigAccountNumber = etree.SubElement(TagMethod, 'originAccountNumber', nsmap=ns_map)
+                    TagPaymentMethod = etree.SubElement(TagMethod, 'paymentMethod', nsmap=ns_map)
+                    TagBagId = etree.SubElement(TagMethod, 'bagId', nsmap=ns_map)
+                    if var_x:
+                        if var_x['amount']:
+                            TagAmount.text = str(var_x['amount'])
+                        if var_x['bank']:
+                            TagBank.text = var_x['bank']
+                        if var_x['document_number']:
+                            TagDocNumber.text = str(var_x['document_number'])
+                        if var_x['document_date']:
+                            TagDate.text = str(var_x['document_date'])
+                        if var_x['origin_account_number']:
+                            TagOrigAccountNumber.text = str(var_x['origin_account_number'])
+                        if var_x['payment_method']:
+                            TagPaymentMethod.text = str(var_x['payment_method'])
+                        if var_x['bag_id']:
+                            TagBagId.text = str(var_x['bag_id'])
 
-                                    if method == "GetBalanceByBag":
-                                        if "GetBlanceByBagResponse" in new_json["soap:Envelope"]["soap:Body"]:
-                                            if "GetBlanceByBagResult" in new_json["soap:Envelope"]["soap:Body"]["GetBlanceByBagResponse"]:
-                                                if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["GetBlanceByBagResponse"]["GetBlanceByBagResult"]:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]["GetBlanceByBagResponse"]["GetBlanceByBagResult"]["ResponseCode"]
-                                                    if int(response_code) == 000:
-                                                        balance = new_json["soap:Envelope"]["soap:Body"]["GetBlanceByBagResponse"]["GetBlanceByBagResult"]["balance"]
-                                                        data = balance
-                                    if method == "GetAllProductExtendList":
-                                        if "GetAllProductExtendListResponse" in new_json["soap:Envelope"]["soap:Body"]:
-                                            if "GetAllProductExtendListResult" in new_json["soap:Envelope"]["soap:Body"]["GetAllProductExtendListResponse"]:
-                                                if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["GetAllProductExtendListResponse"]["GetAllProductExtendListResult"]:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]["GetAllProductExtendListResponse"]["GetAllProductExtendListResult"]["ResponseCode"]
-                                                    if int(response_code) == 000:
-                                                        data = new_json["soap:Envelope"]["soap:Body"]["GetAllProductExtendListResponse"]["GetAllProductExtendListResult"]["ProductExtendedList"]
 
-                                    if method == "GetSession":
-                                        if "GetSessionResponse" in new_json["soap:Envelope"]["soap:Body"]:
-                                            if "GetSessionResult" in new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]:
-                                                if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]["GetSessionResult"]:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]["GetSessionResult"]["ResponseCode"]
-                                                    if int(response_code) == 000:
-                                                        data = new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]["GetSessionResult"]
-                                                    else:
-                                                        raise UserError(new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]["GetSessionResult"]["ResponseMessage"])
+                xmls = etree.tostring(Envelope, encoding="UTF-8")
+                xmls = xmls.decode("utf-8").replace("&amp;", "&").encode("utf-8")
+                xmls_base64 = base64.b64encode(xmls)
+                logging.warning('XMLS')
+                logging.warning(xmls)
+                logging.warning('')
+                url = "https://wspruebas.cedixvirtual.mx/redmas_plat/WebService/SaleService.asmx"
 
-                                    if method == 'RegisterPosTokenResponse':
-                                        if "RegisterPosTokenResponse" in new_json["soap:Envelope"]["soap:Body"]:
-                                            if "RegisterPosTokenResult" in new_json["soap:Envelope"]["soap:Body"]["RegisterPosTokenResponse"]:
-                                                if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["RegisterPosTokenResponse"]["RegisterPosTokenResult"]:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]["RegisterPosTokenResponse"]["RegisterPosTokenResult"]["ResponseCode"]
-                                                    if int(response_code) == 000:
-                                                        logging.warning('transaccion exitosa')
-                                                        registered = True
-                                                    else:
-                                                        response_codes = self.response_codes()
-                                                        if response_code in response_codes:
-                                                            raise UserError(str(response_codes[response_code]))
+                headers = {"content-type": "text/xml; charset=utf-8", 'Host': "wspruebas.cedixvirtual.mx"}
+                response = requests.post(url, data = xmls, headers = headers)
+                logging.warning('status code')
+                logging.warning(response.status_code)
+
+                if response:
+                    if response.status_code == 200:
+                        if response.content:
+                            new_xml = xmltodict.parse(response.content)
+                            logging.warning('json.dumps(new_xml)')
+                            logging.warning(json.dumps(new_xml))
+                            logging.warning('')
+                            new_json1 = json.dumps(new_xml)
+                            new_json = json.loads(new_json1)
+                            if new_json:
+                                if "soap:Envelope" in new_json:
+                                    if "soap:Body" in new_json["soap:Envelope"]:
+                                        if method == "GetAvailableCarriers":
+                                            if "GetAvailableCarriersResponse" in new_json["soap:Envelope"]["soap:Body"]:
+                                                if "GetAvailableCarriersResult" in new_json["soap:Envelope"]["soap:Body"]["GetAvailableCarriersResponse"]:
+                                                    if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["GetAvailableCarriersResponse"]["GetAvailableCarriersResult"]:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]["GetAvailableCarriersResponse"]["GetAvailableCarriersResult"]["ResponseCode"]
+                                                        if int(response_code) == 000:
+                                                            logging.warning('transaccion exitosa')
+                                                            if "CarrierList" in new_json["soap:Envelope"]["soap:Body"]["GetAvailableCarriersResponse"]["GetAvailableCarriersResult"]:
+                                                                data =  new_json["soap:Envelope"]["soap:Body"]["GetAvailableCarriersResponse"]["GetAvailableCarriersResult"]["CarrierList"]
+                                                                # logging.warning(new_json["soap:Envelope"]["soap:Body"]["GetAvailableCarriersResponse"]["GetAvailableCarriersResult"]["CarrierList"])
+
+                                        if method == "GetProductsCategoriesByClientId":
+                                            if "GetProductsCategoriesByClientIdResponse" in new_json["soap:Envelope"]["soap:Body"]:
+                                                if "GetProductsCategoriesByClientIdResult" in new_json["soap:Envelope"]["soap:Body"]["GetProductsCategoriesByClientIdResponse"]:
+                                                    if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["GetProductsCategoriesByClientIdResponse"]["GetProductsCategoriesByClientIdResult"]:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]["GetProductsCategoriesByClientIdResponse"]["GetProductsCategoriesByClientIdResult"]["ResponseCode"]
+                                                        if int(response_code) == 000:
+                                                            logging.warning('transaccion exitosa')
+                                                            if "ProductCategories" in new_json["soap:Envelope"]["soap:Body"]["GetProductsCategoriesByClientIdResponse"]["GetProductsCategoriesByClientIdResult"]:
+                                                                data = new_json["soap:Envelope"]["soap:Body"]["GetProductsCategoriesByClientIdResponse"]["GetProductsCategoriesByClientIdResult"]["ProductCategories"]
+                                                                # logging.warning(new_json["soap:Envelope"]["soap:Body"]["GetProductsCategoriesByClientIdResponse"]["GetProductsCategoriesByClientIdResult"]["ProductCategories"])
+                                            # logging.warning('GetProductsCategoriesByClientId')
+
+                                        if method == "GetBalanceByBag":
+                                            if "GetBlanceByBagResponse" in new_json["soap:Envelope"]["soap:Body"]:
+                                                if "GetBlanceByBagResult" in new_json["soap:Envelope"]["soap:Body"]["GetBlanceByBagResponse"]:
+                                                    if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["GetBlanceByBagResponse"]["GetBlanceByBagResult"]:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]["GetBlanceByBagResponse"]["GetBlanceByBagResult"]["ResponseCode"]
+                                                        if int(response_code) == 000:
+                                                            balance = new_json["soap:Envelope"]["soap:Body"]["GetBlanceByBagResponse"]["GetBlanceByBagResult"]["balance"]
+                                                            data = balance
+                                        if method == "GetAllProductExtendList":
+                                            if "GetAllProductExtendListResponse" in new_json["soap:Envelope"]["soap:Body"]:
+                                                if "GetAllProductExtendListResult" in new_json["soap:Envelope"]["soap:Body"]["GetAllProductExtendListResponse"]:
+                                                    if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["GetAllProductExtendListResponse"]["GetAllProductExtendListResult"]:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]["GetAllProductExtendListResponse"]["GetAllProductExtendListResult"]["ResponseCode"]
+                                                        if int(response_code) == 000:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]["GetAllProductExtendListResponse"]["GetAllProductExtendListResult"]["ProductExtendedList"]
+
+                                        if method == "GetSession":
+                                            if "GetSessionResponse" in new_json["soap:Envelope"]["soap:Body"]:
+                                                if "GetSessionResult" in new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]:
+                                                    if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]["GetSessionResult"]:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]["GetSessionResult"]["ResponseCode"]
+                                                        if int(response_code) == 000:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]["GetSessionResult"]
                                                         else:
-                                                            raise UserError('Error codigo no encontrado')
+                                                            raise UserError(new_json["soap:Envelope"]["soap:Body"]["GetSessionResponse"]["GetSessionResult"]["ResponseMessage"])
 
-                                    if method == "ChangeClerkCode":
-                                        if "ChangeClerkCodeRespone" in new_json["soap:Envelope"]["soap:Body"]:
-                                            if "ChangeClerkCodeResult" in new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]:
-                                                if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]["ChangeClerkCodeResult"]:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]["ChangeClerkCodeResult"]["ResponseCode"]
-                                                    if int(response_code) == 000:
-                                                        pos.clerkcode = pos.newclerkcode
-                                                        pos.newclerkcode = ""
-                                                        data = True
-                                                    else:
-                                                        raise UserError(new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]["ChangeClerkCodeResult"]["ResponseMessage"])
+                                        if method == 'RegisterPosTokenResponse':
+                                            if "RegisterPosTokenResponse" in new_json["soap:Envelope"]["soap:Body"]:
+                                                if "RegisterPosTokenResult" in new_json["soap:Envelope"]["soap:Body"]["RegisterPosTokenResponse"]:
+                                                    if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["RegisterPosTokenResponse"]["RegisterPosTokenResult"]:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]["RegisterPosTokenResponse"]["RegisterPosTokenResult"]["ResponseCode"]
+                                                        if int(response_code) == 000:
+                                                            logging.warning('transaccion exitosa')
+                                                            registered = True
+                                                        else:
+                                                            response_codes = self.response_codes()
+                                                            if response_code in response_codes:
+                                                                raise UserError(str(response_codes[response_code]))
+                                                            else:
+                                                                raise UserError('Error codigo no encontrado')
 
-                                    if method == 'CheckReference':
-                                        if 'CheckReferenceResponse' in new_json["soap:Envelope"]["soap:Body"]:
-                                            if "CheckReferenceResult" in new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]:
-                                                if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]['ResponseCode']
+                                        if method == "ChangeClerkCode":
+                                            if "ChangeClerkCodeRespone" in new_json["soap:Envelope"]["soap:Body"]:
+                                                if "ChangeClerkCodeResult" in new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]:
+                                                    if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]["ChangeClerkCodeResult"]:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]["ChangeClerkCodeResult"]["ResponseCode"]
+                                                        if int(response_code) == 000:
+                                                            pos.clerkcode = pos.newclerkcode
+                                                            pos.newclerkcode = ""
+                                                            data = True
+                                                        else:
+                                                            raise UserError(new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]["ChangeClerkCodeResult"]["ResponseMessage"])
 
-                                                    if int(response_code) == 000:
-                                                        data = new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]
-                                                    else:
-                                                        data = new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]['ResponseMessage']
-                                                        # raise UserError(new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]["ResponseMessage"])
-                                                # if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["CheckReference"][""]:
+                                        if method == 'CheckReference':
+                                            if 'CheckReferenceResponse' in new_json["soap:Envelope"]["soap:Body"]:
+                                                if "CheckReferenceResult" in new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]:
+                                                    if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]['ResponseCode']
 
-                                    if method == 'Sale':
-                                        logging.warning('Method SALE again-----------------')
-                                        logging.warning('')
-                                        if 'SaleResponse' in new_json["soap:Envelope"]["soap:Body"]:
-                                            if 'SaleResult' in new_json["soap:Envelope"]["soap:Body"]['SaleResponse']:
-                                                if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']:
-                                                    logging.warning(new_json["soap:Envelope"]["soap:Body"]['SaleResponse'])
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']['ResponseCode']
-                                                    if int(response_code) == 000:
-                                                        data = new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']
-                                                    else:
-                                                        # raise UserError(new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']['ResponseMessage'])
-                                                        data = new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']['ResponseMessage']
-                                    if method == 'CheckSale':
-                                        logging.warning('Llamando al metodo CHECKSALE')
-                                        logging.warning(new_json["soap:Envelope"]["soap:Body"])
-                                        if 'CheckSaleResponse' in new_json["soap:Envelope"]["soap:Body"]:
-                                            if 'CheckSaleResult' in new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']:
-                                                if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']['CheckSaleResult']:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']['CheckSaleResult']['ResponseCode']
-                                                    if int(response_code) == 000:
-                                                        data = new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']['CheckSaleResult']
-                                                    else:
-                                                        data = new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']['CheckSaleResult']['ResponseMessage']
-                                    if method == 'GetBalanceByBag':
-                                        if 'GetBalanceByBagResponse' in new_json["soap:Envelope"]["soap:Body"]:
-                                            if 'GetBalanceByBagResult' in new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']:
-                                                if 'ResponseCode'in new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseCode']
-                                                    balance = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['Balance']
-                                                    if int(response_code) == 000 and float(balance) > 0:
-                                                        data = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']
-                                                    elif int(response_code) == 000 and float(balance) == 0:
-                                                        data = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseMessage'] + ' saldo = 0'
-                                                    else:
-                                                        # raise UserError(new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseMessage'])
-                                                        data = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseMessage']
-                                    if method == 'GetAvailablePaymentMethods':
-                                        if 'GetAvailablePaymentMethodsResponse' in new_json["soap:Envelope"]["soap:Body"]:
-                                            if 'GetAvailablePaymentMethodsResult' in new_json["soap:Envelope"]["soap:Body"]['GetAvailablePaymentMethodsResponse']:
-                                                if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['GetAvailablePaymentMethodsResponse']['GetAvailablePaymentMethodsResult']:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]['GetAvailablePaymentMethodsResponse']['GetAvailablePaymentMethodsResult']['ResponseCode']
-                                                    if int(response_code) == 000:
-                                                        data = new_json["soap:Envelope"]["soap:Body"]['GetAvailablePaymentMethodsResponse']['GetAvailablePaymentMethodsResult']
-                                                    else:
-                                                        raise UserError(new_json["soap:Envelope"]["soap:Body"]['GetAvailablePaymentMethodsResponse']['GetAvailablePaymentMethodsResult']['ResponseMessage'])
+                                                        if int(response_code) == 000:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]
+                                                        else:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]['ResponseMessage']
+                                                            # raise UserError(new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]["ResponseMessage"])
+                                                    # if "ResponseCode" in new_json["soap:Envelope"]["soap:Body"]["CheckReference"][""]:
 
-                                    if method == 'GetAvailableBanks':
-                                        if 'GetAvailableBanksResponse' in new_json["soap:Envelope"]["soap:Body"]:
-                                            if 'GetAvailableBanksResult' in new_json["soap:Envelope"]["soap:Body"]['GetAvailableBanksResponse']:
-                                                if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['GetAvailableBanksResponse']['GetAvailableBanksResult']:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]['GetAvailableBanksResponse']['GetAvailableBanksResult']['ResponseCode']
-                                                    if int(response_code) == 000:
-                                                        data = new_json["soap:Envelope"]["soap:Body"]['GetAvailableBanksResponse']['GetAvailableBanksResult']
-                                                    else:
-                                                        raise UserError(new_json["soap:Envelope"]["soap:Body"]['GetAvailableBanksResponse']['GetAvailableBanksResult']['ResponseMessage'])
+                                        if method == 'Sale':
+                                            logging.warning('Method SALE again-----------------')
+                                            logging.warning('')
+                                            if 'SaleResponse' in new_json["soap:Envelope"]["soap:Body"]:
+                                                if 'SaleResult' in new_json["soap:Envelope"]["soap:Body"]['SaleResponse']:
+                                                    if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']:
+                                                        logging.warning(new_json["soap:Envelope"]["soap:Body"]['SaleResponse'])
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']['ResponseCode']
+                                                        if int(response_code) == 000:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']
+                                                        else:
+                                                            # raise UserError(new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']['ResponseMessage'])
+                                                            data = new_json["soap:Envelope"]["soap:Body"]['SaleResponse']['SaleResult']['ResponseMessage']
+                                        if method == 'CheckSale':
+                                            logging.warning('Llamando al metodo CHECKSALE')
+                                            logging.warning(new_json["soap:Envelope"]["soap:Body"])
+                                            if 'CheckSaleResponse' in new_json["soap:Envelope"]["soap:Body"]:
+                                                if 'CheckSaleResult' in new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']:
+                                                    if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']['CheckSaleResult']:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']['CheckSaleResult']['ResponseCode']
+                                                        if int(response_code) == 000:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']['CheckSaleResult']
+                                                        else:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]['CheckSaleResponse']['CheckSaleResult']['ResponseMessage']
+                                        if method == 'GetBalanceByBag':
+                                            if 'GetBalanceByBagResponse' in new_json["soap:Envelope"]["soap:Body"]:
+                                                if 'GetBalanceByBagResult' in new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']:
+                                                    if 'ResponseCode'in new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseCode']
+                                                        balance = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['Balance']
+                                                        if int(response_code) == 000 and float(balance) > 0:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']
+                                                        elif int(response_code) == 000 and float(balance) == 0:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseMessage'] + ' saldo = 0'
+                                                        else:
+                                                            # raise UserError(new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseMessage'])
+                                                            data = new_json["soap:Envelope"]["soap:Body"]['GetBalanceByBagResponse']['GetBalanceByBagResult']['ResponseMessage']
+                                        if method == 'GetAvailablePaymentMethods':
+                                            if 'GetAvailablePaymentMethodsResponse' in new_json["soap:Envelope"]["soap:Body"]:
+                                                if 'GetAvailablePaymentMethodsResult' in new_json["soap:Envelope"]["soap:Body"]['GetAvailablePaymentMethodsResponse']:
+                                                    if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['GetAvailablePaymentMethodsResponse']['GetAvailablePaymentMethodsResult']:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]['GetAvailablePaymentMethodsResponse']['GetAvailablePaymentMethodsResult']['ResponseCode']
+                                                        if int(response_code) == 000:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]['GetAvailablePaymentMethodsResponse']['GetAvailablePaymentMethodsResult']
+                                                        else:
+                                                            raise UserError(new_json["soap:Envelope"]["soap:Body"]['GetAvailablePaymentMethodsResponse']['GetAvailablePaymentMethodsResult']['ResponseMessage'])
 
-                                    if method == 'SubmitPayNotification':
-                                        logging.warning('Que estamos haciendo?')
-                                        logging.warning(new_json["soap:Envelope"]["soap:Body"])
-                                        if 'SubmitPayNotificationResponse' in new_json["soap:Envelope"]["soap:Body"]:
-                                            if 'SubmitPayNotificationResult' in new_json["soap:Envelope"]["soap:Body"]['SubmitPayNotificationResponse']:
-                                                if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['SubmitPayNotificationResponse']['SubmitPayNotificationResult']:
-                                                    response_code = new_json["soap:Envelope"]["soap:Body"]['SubmitPayNotificationResponse']['SubmitPayNotificationResult']['ResponseCode']
-                                                    if int(response_code) == 000:
-                                                        data = new_json["soap:Envelope"]["soap:Body"]['SubmitPayNotificationResponse']['SubmitPayNotificationResult']
-                                                    else:
-                                                        logging.warning('Algo va mal :C')
-                else:
-                    raise UserError(str('Error de conexion'))
+                                        if method == 'GetAvailableBanks':
+                                            if 'GetAvailableBanksResponse' in new_json["soap:Envelope"]["soap:Body"]:
+                                                if 'GetAvailableBanksResult' in new_json["soap:Envelope"]["soap:Body"]['GetAvailableBanksResponse']:
+                                                    if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['GetAvailableBanksResponse']['GetAvailableBanksResult']:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]['GetAvailableBanksResponse']['GetAvailableBanksResult']['ResponseCode']
+                                                        if int(response_code) == 000:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]['GetAvailableBanksResponse']['GetAvailableBanksResult']
+                                                        else:
+                                                            raise UserError(new_json["soap:Envelope"]["soap:Body"]['GetAvailableBanksResponse']['GetAvailableBanksResult']['ResponseMessage'])
 
-            logging.warning(response)
-        return data
+                                        if method == 'SubmitPayNotification':
+                                            logging.warning('Que estamos haciendo?')
+                                            logging.warning(new_json["soap:Envelope"]["soap:Body"])
+                                            if 'SubmitPayNotificationResponse' in new_json["soap:Envelope"]["soap:Body"]:
+                                                if 'SubmitPayNotificationResult' in new_json["soap:Envelope"]["soap:Body"]['SubmitPayNotificationResponse']:
+                                                    if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['SubmitPayNotificationResponse']['SubmitPayNotificationResult']:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]['SubmitPayNotificationResponse']['SubmitPayNotificationResult']['ResponseCode']
+                                                        if int(response_code) == 000:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]['SubmitPayNotificationResponse']['SubmitPayNotificationResult']
+                                                        else:
+                                                            logging.warning('Algo va mal :C')
+                    else:
+                        raise UserError(str('Error de conexion'))
+
+                logging.warning(response)
+                return data
 
     # Autenticacion registrando token
     def register_pos_token(self):

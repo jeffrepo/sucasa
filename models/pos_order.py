@@ -17,7 +17,7 @@ class PosOrder(models.Model):
     reference_2 = fields.Char('Reference 2')
     reference_3 = fields.Char('Reference 3')
     transaccion_id = fields.Char('Identificador de transacción')
-    transaccion_date = fields.Char('Fecha de transacción')
+    transaccion_date = fields.Date('Fecha de transacción')
     comision = fields.Float('Comision')
     iva_comision = fields.Float('IVA comision')
 
@@ -212,9 +212,11 @@ class PosOrder(models.Model):
                     if product_dicc['product_id']==0:
                         product_dicc['product_id']=producto.red_id
                         product_dicc['amount']=(linea[2]['price_unit'] * linea[2]['qty'])
-                        product_dicc['reference1']= order[0]['data']['reference1']
-                        if order[0]['data']['reference2']:
-                            product_dicc['reference2'] = order[0]['data']['reference2']
+                        if 'reference1' in order[0]['data']:
+                            product_dicc['reference1']= order[0]['data']['reference1']
+                        if 'data' in order[0] and 'reference2' in order[0]['data']:
+                            if order[0]['data']['reference2']:
+                                product_dicc['reference2'] = order[0]['data']['reference2']
                         else:
                             product_dicc['reference2']=producto.reference2
                         product_dicc['reference3']= order[0]['data']['reference3']
@@ -301,8 +303,11 @@ class PosOrder(models.Model):
                     # res = super(PosOrder, self)._process_order(order, draft, existing_order)
 
                     #order_red_mas = self.env['pos.order'].search([('id', '=', res)])
+                    logging.warning('not suppot query 1')
                     if value_red_mas[1]:
+                        logging.warning('not suppot query 2')
                         if value_red_mas[1]['TransactionId']:
+                            logging.warning('not suppot query 3')
                             validation['TransactionId'] = value_red_mas[1]['TransactionId']
                             #order_red_mas.transaccion_id = str(value_red_mas[1]['TransactionId'])
                         if value_red_mas[1]['TransactionDate']:
@@ -357,33 +362,35 @@ class PosOrder(models.Model):
 
         orders = self.env['pos.order'].search([('id', '=', dicc[0]['id_order'])])
         for order in orders:
-            if dicc[0]['TransactionId']:
-                order.transaccion_id = dicc[0]['TransactionId']
-            if dicc[0]['TransactionDate']:
-                order.transaccion_date = dicc[0]['TransactionId']
-            if dicc[0]['ProviderAuthorization']:
-                order.provider_authorizacion = dicc[0]['ProviderAuthorization']
+            if len(dicc[0]) > 0:
+                if 'TransactionId' in dicc[0]:
+                    if dicc[0]['TransactionId']:
+                        order.transaccion_id = dicc[0]['TransactionId']
+                    if dicc[0]['TransactionDate']:
+                        order.transaccion_date = dicc[0]['TransactionDate']
+                    if dicc[0]['ProviderAuthorization']:
+                        order.provider_authorizacion = dicc[0]['ProviderAuthorization']
 
-            if 'AditionalInfo1' in dicc[0] and dicc[0]['AditionalInfo1']:
-                order.add_info1 = dicc[0]['AditionalInfo1']
-            if 'AditionalInfo2' in dicc[0] and dicc[0]['AditionalInfo2']:
-                order.add_info2 = dicc[0]['AditionalInfo2']
-            if 'AditionalInfo4' in dicc[0] and dicc[0]['AditionalInfo4']:
-                order.add_info3 = dicc[0]['AditionalInfo4']
-            if 'LegalInformation' in dicc[0] and dicc[0]['LegalInformation']:
-                order.legal_info = dicc[0]['LegalInformation']
-            if 'reference1' in dicc[0] and dicc[0]['reference1']:
-                order.reference_1 = dicc[0]['reference1']
-            if 'reference2' in dicc[0] and dicc[0]['reference2']:
-                order.reference_2 = dicc[0]['reference2']
-            if 'reference3' in dicc[0] and dicc[0]['reference3']:
-                order.reference_3 = dicc[0]['reference3']
-            if 'comision' in dicc[0] and dicc[0]['comision']:
-                order.comision = dicc[0]['comision']
-            if 'iva_comision' in dicc[0] and dicc[0]['iva_comision']:
-                logging.warning('Entrando al iva comision :o')
-                logging.warning(float(dicc[0]['iva_comision']))
-                order.iva_comision = float(dicc[0]['iva_comision'])
+                    if 'AditionalInfo1' in dicc[0] and dicc[0]['AditionalInfo1']:
+                        order.add_info1 = dicc[0]['AditionalInfo1']
+                    if 'AditionalInfo2' in dicc[0] and dicc[0]['AditionalInfo2']:
+                        order.add_info2 = dicc[0]['AditionalInfo2']
+                    if 'AditionalInfo4' in dicc[0] and dicc[0]['AditionalInfo4']:
+                        order.add_info3 = dicc[0]['AditionalInfo4']
+                    if 'LegalInformation' in dicc[0] and dicc[0]['LegalInformation']:
+                        order.legal_info = dicc[0]['LegalInformation']
+                    if 'reference1' in dicc[0] and dicc[0]['reference1']:
+                        order.reference_1 = dicc[0]['reference1']
+                    if 'reference2' in dicc[0] and dicc[0]['reference2']:
+                        order.reference_2 = dicc[0]['reference2']
+                    if 'reference3' in dicc[0] and dicc[0]['reference3']:
+                        order.reference_3 = dicc[0]['reference3']
+                    if 'comision' in dicc[0] and dicc[0]['comision']:
+                        order.comision = dicc[0]['comision']
+                    if 'iva_comision' in dicc[0] and dicc[0]['iva_comision']:
+                        logging.warning('Entrando al iva comision :o')
+                        logging.warning(float(dicc[0]['iva_comision']))
+                        order.iva_comision = float(dicc[0]['iva_comision'])
 
 
         return True
@@ -512,7 +519,7 @@ class PosOrder(models.Model):
         if other_data != None:
             return [value_red_mas_support_query,other_data]
         else:
-            return value_red_mas_support_query
+            return [value_red_mas_support_query]
 
     def checkRedMas(self, config_id, product_dicc, number):
         logging.warning('CheckRedMas 1')

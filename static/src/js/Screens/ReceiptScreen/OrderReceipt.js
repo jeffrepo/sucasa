@@ -27,7 +27,8 @@ odoo.define('sucasa.OrderReceipt', function(require) {
               'reference3':'',
               'legal_info':'',
               'comision':0,
-              'iva_comision':0
+              'iva_comision':0,
+              'cantidad_productos':0,
             });
 
             var state = this.state;
@@ -41,6 +42,14 @@ odoo.define('sucasa.OrderReceipt', function(require) {
               console.log('Entramos al RPC');
               console.log(ticket_values);
               if(ticket_values){
+                var x = 0;
+                order.get_orderlines().forEach(function(prod){
+                    console.log('Que es prod en sucasa');
+                    console.log(prod)
+                    x+=prod.quantity;
+                    
+                });  
+                state.cantidad_productos = x;
                 state.transaccion_id = ticket_values['transaccion_id'];
                 state.provider_authorizacion = ticket_values['provider_authorizacion'];
                 state.reference1 = ticket_values['reference1'];
@@ -52,6 +61,9 @@ odoo.define('sucasa.OrderReceipt', function(require) {
               }
 
             });
+              
+            console.log('Buscando valor en SUCASA');
+            console.log(order);
 
           }
 
