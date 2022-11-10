@@ -275,7 +275,6 @@ class PosConfig(models.Model):
                             # TagPosTransactionId.text = '9'
                             TagPosTransactionId.text = str(var_x[0]['pos_transaccion_id'])
 
-
                 if method == 'Sale':
                     TagSaleRequest = etree.SubElement(TagMethod, 'saleRequest', nsmap=ns_map)
                     TagProductId = etree.SubElement(TagSaleRequest, 'ProductId', nsmap=ns_map)
@@ -357,6 +356,8 @@ class PosConfig(models.Model):
                     TagOrigAccountNumber = etree.SubElement(TagMethod, 'originAccountNumber', nsmap=ns_map)
                     TagPaymentMethod = etree.SubElement(TagMethod, 'paymentMethod', nsmap=ns_map)
                     TagBagId = etree.SubElement(TagMethod, 'bagId', nsmap=ns_map)
+                    # TagPaymentMethod = etree.SubElement(TagMethod, 'paymentMethod', nsmap=ns_map)
+                    # TagBagId = etree.SubElement(TagMethod, 'bagId', nsmap=ns_map)
                     if var_x:
                         if var_x['amount']:
                             TagAmount.text = str(var_x['amount'])
@@ -373,6 +374,25 @@ class PosConfig(models.Model):
                         if var_x['bag_id']:
                             TagBagId.text = str(var_x['bag_id'])
 
+                if method == 'GetTransactionFromPeriod':
+                    logging.warning('Welcome to GetTransactionFromPeriod -> pos.config ')
+                    logging.warning(var_x)
+                    TagDtStart = etree.SubElement(TagMethod, 'dtStartyyyyMMdd', nsmap=ns_map)
+                    TagDtFinal = etree.SubElement(TagMethod, 'dtEndyyyyMMdd', nsmap=ns_map)
+                    TagStoreIdSelected = etree.SubElement(TagMethod, 'storeIdSelected', nsmap=ns_map)
+                    TagPosIdSelected = etree.SubElement(TagMethod, 'posIdSelected', nsmap=ns_map)
+                    TagProductCategorySelected = etree.SubElement(TagMethod, 'productCategorySelected', nsmap=ns_map)
+                    if var_x:
+                        if var_x[0]:
+                            TagDtStart.text = var_x[0]
+                        if var_x[1]:
+                            TagDtFinal.text = var_x[1]
+                        if var_x[2]:
+                            TagStoreIdSelected.text = str(var_x[2])
+                        if var_x[3]:
+                            TagPosIdSelected.text = str(var_x[3])
+                        if var_x[4]:
+                            TagProductCategorySelected.text = str(var_x[4])
 
                 xmls = etree.tostring(Envelope, encoding="UTF-8")
                 xmls = xmls.decode("utf-8").replace("&amp;", "&").encode("utf-8")
@@ -556,6 +576,22 @@ class PosConfig(models.Model):
                                                             data = new_json["soap:Envelope"]["soap:Body"]['SubmitPayNotificationResponse']['SubmitPayNotificationResult']
                                                         else:
                                                             logging.warning('Algo va mal :C')
+
+                                        if method == 'GetTransactionFromPeriod':
+                                            logging.warning('Verificando method == ')
+                                            logging.warning(new_json)
+                                            logging.warning('')
+                                            if 'GetTransactionFromPeriodResponse' in new_json["soap:Envelope"]["soap:Body"]:
+                                                if 'GetTransactionFromPeriodResult' in new_json["soap:Envelope"]["soap:Body"]['GetTransactionFromPeriodResponse']:
+                                                    if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]['GetTransactionFromPeriodResponse']['GetTransactionFromPeriodResult']:
+                                                        response_code = new_json["soap:Envelope"]["soap:Body"]['GetTransactionFromPeriodResponse']['GetTransactionFromPeriodResult']['ResponseCode']
+                                                        if response_code == '000':
+                                                            if new_json["soap:Envelope"]["soap:Body"]['GetTransactionFromPeriodResponse']['GetTransactionFromPeriodResult']['Sales']:
+                                                                data = new_json["soap:Envelope"]["soap:Body"]['GetTransactionFromPeriodResponse']['GetTransactionFromPeriodResult']['Sales']['TransactionsSales']
+                                                            else:
+                                                                data = new_json["soap:Envelope"]["soap:Body"]['GetTransactionFromPeriodResponse']['GetTransactionFromPeriodResult']['ResponseMessage']
+                                                        else:
+                                                            data = new_json["soap:Envelope"]["soap:Body"]['GetTransactionFromPeriodResponse']['GetTransactionFromPeriodResult']['ResponseMessage']
                     else:
                         raise UserError(str('Error de conexion'))
 

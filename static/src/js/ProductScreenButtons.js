@@ -23,15 +23,57 @@ odoo.define('sucasa.ProductScreenButtons', function(require) {
 
       async onClick() {
         var order = this.env.pos.get_order();
+        console.log("Este es el que vale 1");
+        var value_reference1 = false;
+        var value_reference2 = false;
+        var value_reference3 = false;
+        order.get_orderlines().forEach(function(prod){
+          console.log("Que tiene productos?");
+          console.log(prod);
+          if(prod.product.reference1){
+            value_reference1 = true;
+          }else{
+            value_reference1 = false;
+          }
+          if(prod.product.reference2){
+            value_reference2 = true;
+          }else{
+            value_reference2 = false;
+          }
+
+          if(prod.product.reference3){
+            value_reference3 = true;
+          }else{
+            value_reference3 = false;
+          }
+        });
 
         const { confirmed, payload: inputNote } = await this.showPopup('CustomPopup', {
             title: this.env._t('Datos verificadores'),
+            value_reference1: value_reference1,
+            value_reference2: value_reference2,
+            value_reference3: value_reference3,
         });
 
         if (confirmed) {
-            order.set_reference1(document.getElementById('reference1').value)
-            order.set_reference2(document.getElementById('reference2').value)
-            order.set_reference3(document.getElementById('reference3').value)
+            if (document.getElementById('reference1')){
+              order.set_reference1(document.getElementById('reference1').value)
+            }else{
+              order.set_reference1(false)
+            }
+
+            if (document.getElementById('reference2')){
+              order.set_reference2(document.getElementById('reference2').value)
+            }else{
+              order.set_reference2(false)
+            }
+
+            if (document.getElementById('reference3')){
+              order.set_reference3(document.getElementById('reference3').value)
+            }else{
+              order.set_reference3(false)
+            }
+
 
         };
 

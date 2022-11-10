@@ -16,12 +16,14 @@
         'views/sucasa_view.xml',
         'views/pos_session_view.xml',
         'views/pos_order_views.xml',
+        'wizard/transaction_from_period_wizard_views.xml',
         'security/ir.model.access.csv'
 
     ],
     'assets':{
         'point_of_sale.assets': [
             'sucasa/static/src/js/models.js',
+            'sucasa/static/src/js/ProductScreenClick.js',
             'sucasa/static/src/js/Screens/ProductScreen/ProductScreen.js',
             'sucasa/static/src/js/ProductScreenButtons.js',
             'sucasa/static/src/js/Popups/CustomPopup.js',

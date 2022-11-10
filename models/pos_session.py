@@ -8,7 +8,7 @@ class PosSession(models.Model):
     _inherit = 'pos.session'
 
     sessionid = fields.Char('SessionId')
-    
+
     # Se ejecuta manualmente cuando sea necesario
     def get_all_product_extend_list_session(self):
         for session in self:
@@ -42,7 +42,7 @@ class PosSession(models.Model):
             self.payment_method_ids.actualizar_catalogos(self.config_id)
             res = super(PosSession, self).action_pos_session_open()
         return res
-    
+
     def activate_session(self):
         logging.warning('Sesión automatica')
         open_sessions = self.env['pos.session'].search([('state', '=', 'opened')])
