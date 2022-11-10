@@ -264,7 +264,8 @@ class PosOrder(models.Model):
             id_config = sesiones.config_id.id
             for sesion in sesiones:
                 if sesion.config_id.postoken == False:
-                    return super(PosOrder, self)._process_order(order, draft, existing_order)
+                    return validation
+                    #return super(PosOrder, self)._process_order(order, existing_order)
                 pos_config = [sesion.config_id.id]
                 product_dicc['session']=sesion.sessionid
         if product_dicc['product_id']>0:
