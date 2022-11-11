@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="sucasa_transaction_from_period_form_view">
+            <field name="name">sucasa.transaction_from_period.wizard</field>
+            <field name="model">sucasa.transaction_from_period.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Transacción del período">
+                    <group>
+                        <field name="start_date"/>
+                        <field name="final_date"/>
+                        <field name="point_of_sale"/>
+                        <field name="product_category"/>
+                    </group>
+                    <group>
+                        <field name="name" invisible="1"/>
+                        <field name="archivo" readonly="1" filename="name"/>
+                    </group>
+                    <footer>
+                        <!-- <button name="print_report" type="object" string="Generar" class="oe_highlight"/> -->
+                        <button name="print_report_excel" string="Reporte excel" type="object" class="oe_highlight"/>
+                        <!-- <button name="test" string="test" type="object" class="oe_highlight"/> -->
+                        or
+                        <button special="cancel" string="Cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <act_window id="action_transaction_from_period"
+                    name="Transacción del período"
+                    binding_model="pos.config"
+                    res_model="sucasa.transaction_from_period.wizard"
+                    view_mode="form"
+                    target="new"/>
+
+        <menuitem action="action_transaction_from_period" id="menu_sucasa" parent="point_of_sale.menu_point_rep"/>
+
+    </data>
+</odoo>
