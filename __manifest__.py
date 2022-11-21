@@ -23,7 +23,7 @@
     'assets':{
         'point_of_sale.assets': [
             'sucasa/static/src/js/models.js',
-            'sucasa/static/src/js/ProductScreenClick.js',
+            'sucasa/static/src/js/ProductScreenClickS.js',
             'sucasa/static/src/js/Screens/ProductScreen/ProductScreen.js',
             'sucasa/static/src/js/ProductScreenButtons.js',
             'sucasa/static/src/js/Popups/CustomPopup.js',
