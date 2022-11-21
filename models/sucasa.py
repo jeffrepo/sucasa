@@ -10,6 +10,13 @@ import base64
 import logging
 import xmltodict, json
 
+class SucasaProductWight(models.Model):
+    _name = 'sucasa.productweight'
+
+    weight = fields.Float('Product weight', digits = (12,3))
+    device_id = fields.Integer('Device id')
+
+
 class SucasaConsultaProducto(models.Model):
     _name = 'sucasa.consulta_producto'
 
@@ -72,7 +79,7 @@ class PayNotification(models.Model):
             xml_json = self.config_id.red_autentication('GetAvailableBanks', False)
             if 'ResponseCode' in xml_json:
                 response_code_banks = int(xml_json['ResponseCode'])
-        
+
         logging.warning('BANCOS')
         logging.warning(response_code_banks)
 

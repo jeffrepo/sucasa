@@ -21,6 +21,7 @@ class PosConfig(models.Model):
     posid = fields.Char('Identificador de caja')
     postoken = fields.Char('Token')
     newclerkcode = fields.Char('NuevoCodigo cajero')
+    device_id = fields.Integer('Bascula id')
 
     # def eli_park(self):
     #
@@ -293,6 +294,9 @@ class PosConfig(models.Model):
                         if var_x[0]['amount']:
                             TagAmount.text = str(var_x[0]['amount'])
                             # TagAmount.text = '20'
+                        if 'amount_check_reference' in var_x[0]:
+                            TagAmount.text = str(var_x[0]['amount_check_reference'])
+
                         if var_x[0]['reference1']:
                             TagReference1.text = str(var_x[0]['reference1'])
                         else:
@@ -496,6 +500,8 @@ class PosConfig(models.Model):
                                                             raise UserError(new_json["soap:Envelope"]["soap:Body"]["ChangeClerkCodeRespone"]["ChangeClerkCodeResult"]["ResponseMessage"])
 
                                         if method == 'CheckReference':
+                                            logging.warning("JEFF CHECK REFERENCE1")
+                                            logging.warning(new_json["soap:Envelope"]["soap:Body"])
                                             if 'CheckReferenceResponse' in new_json["soap:Envelope"]["soap:Body"]:
                                                 if "CheckReferenceResult" in new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]:
                                                     if 'ResponseCode' in new_json["soap:Envelope"]["soap:Body"]["CheckReferenceResponse"]["CheckReferenceResult"]:

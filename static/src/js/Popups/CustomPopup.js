@@ -11,7 +11,7 @@ class CustomPopup extends AbstractAwaitablePopup {
 
   constructor() {
     super(...arguments);
-    // useListener('confirmText', this.confirmText);
+    console.log('En un contructor de SUCASA');
   }
 
 

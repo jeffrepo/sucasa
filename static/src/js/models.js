@@ -14,6 +14,12 @@ odoo.define('sucasa.models', function(require) {
     var posmodel_super = models.PosModel.prototype;
     models.PosModel = models.PosModel.extend({
 
+        add_product: async function(product, options){
+        console.log("ad product")
+        console.log(product)
+        console.log(options)
+        return posmodel_super.add_product.apply(product, options);
+        },
         //Check sale se manda a llamar si y solo si Sale() pasó mas de 30 segundos esperando respuesta
         check_sale: async function(orders) {
             console.log('check_sale por timout')
@@ -214,13 +220,13 @@ odoo.define('sucasa.models', function(require) {
             });
 
         },
-        // refresh_sesion: async function(pos_session_id){
-        //     return await this.rpc({
-        //         model: 'pos.session',
-        //         method: 'get_session_pos',
-        //         args: [[], pos_session_id],
-        //     });
-        // },
+        refresh_sesion: async function(){
+            return await this.rpc({
+                model: 'pos.session',
+                method: 'get_session',
+                args: [[]],
+            });
+        },
 
         sending_values_red_mas: async function(dicc){
             console.log('Enviando datos a función value_fields python')
@@ -304,7 +310,7 @@ odoo.define('sucasa.models', function(require) {
                       title: 'Error',
                       body: errt['error'],
                   });
-                 // this.refresh_sesion(order.pos_session_id);
+                 this.refresh_sesion();
               }else{
                   console.log('Todo bien :D');
                   console.log(orders)

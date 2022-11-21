@@ -33,7 +33,7 @@ class TransactionFromPeriodWizard(models.TransientModel):
             final_date = w.final_date.strftime('%Y%m%d')
             store_id_selected = w.point_of_sale.storeid
             pos_id_selected = w.point_of_sale.posid
-            product_category = w.product_category.id
+            product_category = w.product_category.ProductCategoryId
             point_of_sale = w.point_of_sale
 
             values=[start_date, final_date, store_id_selected, pos_id_selected, product_category, point_of_sale]

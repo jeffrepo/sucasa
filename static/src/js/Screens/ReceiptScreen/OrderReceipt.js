@@ -47,8 +47,8 @@ odoo.define('sucasa.OrderReceipt', function(require) {
                     console.log('Que es prod en sucasa');
                     console.log(prod)
                     x+=prod.quantity;
-                    
-                });  
+
+                });
                 state.cantidad_productos = x;
                 state.transaccion_id = ticket_values['transaccion_id'];
                 state.provider_authorizacion = ticket_values['provider_authorizacion'];
@@ -61,7 +61,7 @@ odoo.define('sucasa.OrderReceipt', function(require) {
               }
 
             });
-              
+
             console.log('Buscando valor en SUCASA');
             console.log(order);
 

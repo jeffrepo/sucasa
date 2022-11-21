@@ -25,50 +25,6 @@ odoo.define('sucasa.ProductScreen', function(require) {
         useListener('click-pay', this._onClickPay);
       }
 
-      // fCheckReference(red_id, product_dicc){
-      //   if(red_id){
-      //     rpc.query({
-      //           model: 'pos.order',
-      //           method: 'check_reference',
-      //           args: [[],[this.env.pos.config_id], [product_dicc]],
-      //         },{
-      //
-      //     }).then(function (check_reference){
-      //       console.log('Estamos llamando a una función');
-      //       console.log(check_reference);
-      //
-      //     });
-      //   }
-      //   return true;
-      // }
-      //
-      // fGetBalanceByBag(number){
-      //
-      //   if(number){
-      //     var getBalanceByBag
-      //     rpc.query({
-      //       model: 'pos.order',
-      //       method: 'get_balance_by_bag',
-      //       args:[[], [this.env.pos.config_id], [number]]
-      //     },{
-      //     }).then(function (get_balance_by){
-      //       getBalanceByBag = get_balance_by;
-      //       console.log('Ya casi');
-      //       console.log(getBalanceByBag);
-      //       if(getBalanceByBag){
-      //         return true;
-      //       }else{
-      //         return false;
-      //       }
-      //
-      //     });
-      //
-      //
-      //   }else {
-      //     return false;
-      //   }
-      // }
-
       codeProducts(){
         var self = this;
 
@@ -127,84 +83,13 @@ odoo.define('sucasa.ProductScreen', function(require) {
           }
         })
 
-        // console.log('Product dicc');
-        // console.log(product_dicc);
-        // if(value_red_id){
-        //
-        //   // var get_balance_by_bag = this.fGetBalanceByBag(number);
-        //
-        //   if(support_query){
-        //
-        //     // var check_reference = this.fCheckReference(value_red_id, product_dicc);
-        //     console.log('Antes del RPC');
-        //     rpc.query({
-        //       model: 'pos.order',
-        //       method: 'checkRedMas_supportQuery',
-        //       args:[[], [this.env.pos.config_id], [product_dicc], [number]]
-        //     },{
-        //     }).then(function (response){
-        //       console.log('Que trajo RESPONSE ----------------');
-        //       console.log(response);
-        //       if(response['ResponseMessage'] == false){
-        //         console.log('Entro?');
-        //         self.showScreen('PaymentScreen');
-        //       }else{
-        //         Gui.showPopup('ConfirmPopup', {
-        //           title: self.env._t('ResponseMessage'),
-        //           body:response['ResponseMessage'],
-        //         }).then(({ confirmed }) => {
-        //
-        //
-        //
-        //         });
-        //       }
-        //
-        //
-        //     });
-        //
-        //   }else{
-        //     console.log('Antes del RPC');
-        //     console.log(product_dicc);
-        //     console.log('');
-        //     console.log('');
-        //     rpc.query({
-        //       model: 'pos.order',
-        //       method: 'checkRedMas',
-        //       args:[[], [this.env.pos.config_id], [product_dicc], [number]]
-        //     },{
-        //     }).then(function (response){
-        //       console.log('Que trajo RESPONSE');
-        //       console.log(response);
-        //       if(response['ResponseMessage']==false){
-        //         console.log('Entro?');
-        //         self.showScreen('PaymentScreen');
-        //       }else{
-        //         Gui.showPopup('ConfirmPopup', {
-        //           title: self.env._t('ResponseMessage'),
-        //           body:response['ResponseMessage'],
-        //         }).then(({ confirmed }) => {
-        //
-        //
-        //
-        //         });
-        //       }
-        //
-        //     });
-        //
-        //   }
-        //
-        // }else{
-        //   console.log('Producto sin problemas');
-        //   self.showScreen('PaymentScreen');
-        // }
-
 
       }
 
 
       _onClickPay() {
         super._onClickPay();
-        // this.showScreen('ProductScreen');
+
         this.codeProducts();
 
       }
