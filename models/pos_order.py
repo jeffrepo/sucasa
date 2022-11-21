@@ -35,8 +35,10 @@ class PosOrder(models.Model):
         if len(device_id) > 0:
             product_weight_id= self.env['sucasa.productweight'].search([('device_id','=',device_id[0])])
             if product_weight_id:
-                weight = product_weight_id.weight
-                product_weight_id.unlink()
+                weight = product_weight_id[0].weight
+                product_weight_id[0].unlink()
+                logging.warning('EL PESO')
+                logging.warning(weight)
                 return weight
             else:
                 raise UserError("No se encontró peso")
@@ -51,6 +53,8 @@ class PosOrder(models.Model):
 
                 if xml_json['ResponseCode'] == '000':
                     order_check_reference['ResponseMessage'] = False
+                    if  int(xml_json['Amount']) > 0:
+                        order_check_reference['Amount'] = int(xml_json['Amount'])
             else:
                 order_check_reference['ResponseMessage'] = xml_json
 
@@ -264,8 +268,7 @@ class PosOrder(models.Model):
             id_config = sesiones.config_id.id
             for sesion in sesiones:
                 if sesion.config_id.postoken == False:
-                    return validation
-                    #return super(PosOrder, self)._process_order(order, existing_order)
+                    return super(PosOrder, self)._process_order(order, draft, existing_order)
                 pos_config = [sesion.config_id.id]
                 product_dicc['session']=sesion.sessionid
         if product_dicc['product_id']>0:
@@ -772,8 +775,12 @@ class PosOrder(models.Model):
                 value_check_reference = self.check_reference(config_id, product_dicc)
                 if value_check_reference['ResponseMessage'] == False:
                     logging.warning('4')
+                    logging.warning(value_check_reference)
+                    if 'Amount' in value_check_reference:
+                        logging.warning(product_dicc)
+                        product_dicc[0]['amount_check_reference'] = value_check_reference['Amount']
                     value_checkRedMas = self.checkRedMas(config_id, product_dicc, number)
-                    if value_checkRedMas['ResponseMessage'] == False:
+                    if value_checkRedMas['ResponseMessage'] == False or 'Amount' in value_check_reference:
                         logging.warning('5')
                         value_red_mas_support_query = True
                         other_data = value_checkRedMas

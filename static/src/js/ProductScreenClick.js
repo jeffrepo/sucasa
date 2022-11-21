@@ -6,15 +6,15 @@ odoo.define('sucasa.ProductScreenClick', function(require) {
     var models = require('point_of_sale.models');
 
     models.load_fields('pos.config', 'device_id');
-    
+
     const DevProductScreenClick = ProductScreenClick => class extends ProductScreenClick {
         //@Override
-        
+
         constructor() {
             super(...arguments);
-           
+
         }
-        
+
         async _getAddProductOptions(product, base_code) {
             console.log('_getAddProductOptions')
             console.log(product)
@@ -30,8 +30,8 @@ odoo.define('sucasa.ProductScreenClick', function(require) {
                 return super_product_options
             }
         }
-        
-        
+
+
         async _getSucasaWeight(device_id){
             var self = this;
                 return await this.rpc({
@@ -42,7 +42,7 @@ odoo.define('sucasa.ProductScreenClick', function(require) {
                         timeout: 10000,
                         shadow: false,
                     }).catch(function(error){
-                        //self.set_synch(self.get(              
+                        //self.set_synch(self.get(
                             console.log('err1')
                             return error;
                     }).then( function(response) {
@@ -51,9 +51,9 @@ odoo.define('sucasa.ProductScreenClick', function(require) {
                             return response;
 
 
-                    }); 
-        
-        
+                    });
+
+
         }
 
 
