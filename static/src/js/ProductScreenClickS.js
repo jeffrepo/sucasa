@@ -1,4 +1,4 @@
-odoo.define('sucasa.ProductScreenClick', function(require) {
+odoo.define('sucasa.ProductScreenClickS', function(require) {
     "use strict";
 
     const ProductScreenClick = require('point_of_sale.ProductScreen');
