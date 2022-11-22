@@ -48,7 +48,7 @@ odoo.define('sucasa.ProductScreenClickS', function(require) {
                     }).then( function(response) {
                             console.log('th response')
                             console.log(response)
-                            return response;
+                            return parseFloat(response);
 
 
                     });
