@@ -19,14 +19,17 @@ odoo.define('sucasa.ProductScreenClickS', function(require) {
             console.log('_getAddProductOptions')
             console.log(product)
             console.log(base_code)
-            var super_product_options = await super._getAddProductOptions(product,base_code)
+            
             if (product.to_weight){
                 var device_id = this.env.pos.config.device_id
                 console.log(device_id)
                 var weight = await this._getSucasaWeight(device_id)
+                var super_product_options = await super._getAddProductOptions(product,base_code)
                 super_product_options.quantity = weight
+                
                 return super_product_options
             }else{
+                var super_product_options = await super._getAddProductOptions(product,base_code)
                 return super_product_options
             }
         }
