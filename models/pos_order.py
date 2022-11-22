@@ -33,7 +33,7 @@ class PosOrder(models.Model):
         logging.warning(device_id)
         weight = 0
         if len(device_id) > 0:
-            product_weight_id= self.env['sucasa.productweight'].search([('device_id','=',device_id[0])])
+            product_weight_id= self.env['sucasa.productweight'].sudo().search([('device_id','=',int(device_id[0]))])
             if product_weight_id:
                 weight = product_weight_id[0].weight
                 product_weight_id[0].unlink()
