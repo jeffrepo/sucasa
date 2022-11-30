@@ -15,10 +15,6 @@ odoo.define('sucasa.OrderReceipt', function(require) {
 
           constructor(){
             super(...arguments);
-
-            var self = this;
-            var order = self.env.pos.get_order();
-
             this.state = useState({
               'transaccion_id':'',
               'provider_authorizacion':'',
@@ -31,7 +27,13 @@ odoo.define('sucasa.OrderReceipt', function(require) {
               'cantidad_productos':0,
             });
 
-            var state = this.state;
+          }
+
+
+        async willStart() {
+            var order = self.env.pos.get_order();
+            var self = this;
+            const state = this.state;
 
             rpc.query({
               model: 'pos.order',
@@ -64,9 +66,7 @@ odoo.define('sucasa.OrderReceipt', function(require) {
 
             console.log('Buscando valor en SUCASA');
             console.log(order);
-
-          }
-
+        }
 
         };
 

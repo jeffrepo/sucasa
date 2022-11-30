@@ -70,6 +70,7 @@ odoo.define('sucasa.models', function(require) {
                             return error;
                     }).then( function(response) {
                             console.log('th response')
+
                             return response;
 
 
@@ -104,8 +105,9 @@ odoo.define('sucasa.models', function(require) {
                         const red_mas_request = await self.get_mas(orders)
                         console.log('red_mas_request')
                         console.log(red_mas_request)
+
                         if (resolve){
-                            console.log('entra a resolve')
+                            console.log('entra a resolve **')
                             clearTimeout(timeout);
                             resolve(red_mas_request)
 
@@ -306,11 +308,13 @@ odoo.define('sucasa.models', function(require) {
              console.log('')
              if (errt['error'] != false){
 
-                  Gui.showPopup('ErrorPopup', {
-                      title: 'Error',
-                      body: errt['error'],
-                  });
-                 this.refresh_sesion();
+
+                          console.log('ERROR RED A')
+                          console.log(errt)
+                          Gui.showPopup('ErrorPopup', {
+                              title: 'Error',
+                              body: errt['error'],
+                          });
               }else{
                   console.log('Todo bien :D');
                   console.log(orders)
@@ -318,6 +322,12 @@ odoo.define('sucasa.models', function(require) {
                   console.log('')
                   console.log('')
                   console.log('')
+
+                  //if (errt['error'] != false && 'sesion_expirada' == errt['error']){
+                    //  this.refresh_sesion();
+                     // errt = await this.get_error_red_mas(orders);
+                  //}
+
 
                   var server_id =  await posmodel_super._save_to_server.apply(this, arguments);
 
@@ -327,6 +337,18 @@ odoo.define('sucasa.models', function(require) {
                       errt['id_order']=server_id[0]['id']
                       errt['comision']=orders[0]['data']['comision']
                       errt['iva_comision']=orders[0]['data']['iva_comision']
+                      if('amount_check_reference' in errt){
+                          order.get_orderlines().forEach(function(prod){
+                              if (errt['amount_check_reference']>0){
+                                  console.log('Que es prod en models.js 1');
+                                  console.log(prod)
+                                  prod.price = errt['amount_check_reference'];
+                              }
+
+                          });
+
+
+                      }
                       console.log(errt);
                       console.log('..........');
                       var errt = await this.sending_values_red_mas(errt);

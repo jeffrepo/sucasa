@@ -90,12 +90,15 @@ class PosConfig(models.Model):
     # Se ejecuta por cada transacción en el punto de venta antes y despues
     # para ver el saldo de cada punto
     def _get_balance_by_bag(self, config_id):
+        logging.warning('def get_balance_by_bag')
         saldo = 0
         pos_config_id = self.env['pos.config'].search([('id','=',config_id)])
         if pos_config_id:
             saldo = pos_config_id.red_autentication('GetBalanceByBag')
             if saldo <= 0:
                 logging.warning('error')
+        logging.warning(saldo)
+        logging.warning('')
         return saldo
 
     # Se ejecuta 1 vez al dia , se ejecuta antes de  SubmitPayNotification (_submit_pay_notification)
@@ -346,7 +349,8 @@ class PosConfig(models.Model):
                             TagPosTransactionId.text=str(var_x[0]['pos_transaccion_id'])
                         if var_x[0]['session']:
                             TagSession.text = str(var_x[0]['session'])
-
+                logging.warning('Pos.config method')
+                logging.warning(method)
                 if method == 'GetBalanceByBag':
                     TagBagId = etree.SubElement(TagMethod, 'bagId', nsmap=ns_map)
                     TagBagId.text = str(var_x)
