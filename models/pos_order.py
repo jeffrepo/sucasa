@@ -33,7 +33,7 @@ class PosOrder(models.Model):
         logging.warning(device_id)
         weight = 0
         if len(device_id) > 0:
-            product_weight_id= self.env['sucasa.productweight'].sudo().search([('device_id','=',int(device_id[0]))])
+            product_weight_id= self.env['sucasa.productweight'].search([('device_id','=',device_id[0])])
             if product_weight_id:
                 weight = product_weight_id[0].weight
                 product_weight_id[0].unlink()
@@ -276,6 +276,8 @@ class PosOrder(models.Model):
                 value_red_mas_support_query = self.checkRedMas_supportQuery(pos_config, [product_dicc], [number])
                 logging.warning('Producto con support query')
                 logging.warning(value_red_mas_support_query)
+                logging.warning(order)
+                logging.warning('-> 1')
                 if value_red_mas_support_query[0] == True:
                     # res = super(PosOrder, self)._process_order(order, draft, existing_order)
                     # validation = True
@@ -315,6 +317,7 @@ class PosOrder(models.Model):
                         if order[0]['data']['reference3']:
                             validation['reference3'] = order[0]['data']['reference3']
                             # order_red_mas.reference_3 = order[0]['data']['reference3']
+
                 else:
                     logging.warning('En algun else')
                     logging.warning(value_red_mas_support_query)
@@ -376,6 +379,7 @@ class PosOrder(models.Model):
                         validation["error"] = "error no encontrado"
                 else:
                     validation['error'] = value_red_mas['ResponseMessage']
+
         return validation
 
 
@@ -415,8 +419,11 @@ class PosOrder(models.Model):
                             if order[0]['data']['reference2']:
                                 product_dicc['reference2'] = order[0]['data']['reference2']
                         else:
-                            product_dicc['reference2']=producto.reference2
-                        product_dicc['reference3']= order[0]['data']['reference3']
+                            if product_dicc and 'reference2' in product_dicc:
+                                product_dicc['reference2']=producto.reference2
+                        if product_dicc and 'reference3' in product_dicc:
+                            if order and 'data' in order[0] and 'reference3' in order[0]['data']:
+                                product_dicc['reference3']= order[0]['data']['reference3']
                         xi = 100000000
                         xf = 999999999
                         nr = random.randint(xi,xf)
@@ -447,18 +454,21 @@ class PosOrder(models.Model):
                 value_red_mas_support_query = self.checkRedMas_supportQuery(pos_config, [product_dicc], [number])
                 logging.warning('Producto con support query')
                 logging.warning(value_red_mas_support_query)
+                logging.warning('-> 2')
+                logging.warning(order)
+
                 if value_red_mas_support_query[0] == True:
                     # res = super(PosOrder, self)._process_order(order, draft, existing_order)
                     # validation = True
                     # order_red_mas = self.env['pos.order'].search([('id', '=', res)])
                     if value_red_mas_support_query[1]:
-                        if value_red_mas_support_query[1]['TransactionId']:
+                        if 'TransactionId' in value_red_mas_support_query[1] and value_red_mas_support_query[1]['TransactionId']:
                             validation['TransactionId'] = str(value_red_mas_support_query[1]['TransactionId'])
                             # order_red_mas.transaccion_id = str(value_red_mas_support_query[1]['TransactionId'])
-                        if value_red_mas_support_query[1]['TransactionDate']:
+                        if 'TransactionDate' in value_red_mas_support_query[1] and value_red_mas_support_query[1]['TransactionDate']:
                             validation['TransactionDate'] = str(value_red_mas_support_query[1]['TransactionDate'])
                             # order_red_mas.transaccion_date = str(value_red_mas_support_query[1]['TransactionDate'])
-                        if value_red_mas_support_query[1]['ProviderAuthorization']:
+                        if 'ProviderAuthorization' in value_red_mas_support_query[1] and value_red_mas_support_query[1]['ProviderAuthorization']:
                             validation['ProviderAuthorization'] = str(value_red_mas_support_query[1]['ProviderAuthorization'])
                             # order_red_mas.provider_authorizacion = str(value_red_mas_support_query[1]['ProviderAuthorization'])
                         if 'AditionalInfo1' in value_red_mas_support_query[1]:
@@ -486,6 +496,14 @@ class PosOrder(models.Model):
                         if order[0]['data']['reference3']:
                             validation['reference3'] = order[0]['data']['reference3']
                             # order_red_mas.reference_3 = order[0]['data']['reference3']
+                        if 'amount_check_reference' in value_red_mas_support_query[1] and value_red_mas_support_query[1]['amount_check_reference']:
+                            order[0]['data']['amount_total'] = value_red_mas_support_query[1]['amount_check_reference']
+                            validation['amount_check_reference'] = value_red_mas_support_query[1]['amount_check_reference']
+                            logging.warning('order =D')
+                            logging.warning(order[0])
+                            logging.warning('')
+                            logging.warning('')
+
                 else:
                     logging.warning('En algun else')
                     logging.warning(value_red_mas_support_query)
@@ -501,7 +519,9 @@ class PosOrder(models.Model):
                         logging.warning('NO SUPPORT QUERY REPONSE 00')
                         logging.warning(value_red_mas)
                         if value_red_mas['TransactionId']:
-                            logging.warning('not suppot query 3')
+                            logging.warning('not suppot query 3 ->')
+                            logging.warning(validation)
+                            logging.warning('')
                             validation['TransactionId'] = value_red_mas['TransactionId']
                             #order_red_mas.transaccion_id = str(value_red_mas[1]['TransactionId'])
                         if value_red_mas['TransactionDate']:
@@ -554,10 +574,11 @@ class PosOrder(models.Model):
                     if value_red_mas and value_red_mas['ResponseMessage'] != 'Sesion expirada':
                         validation['error'] = value_red_mas['ResponseMessage']
                     elif value_red_mas and value_red_mas['ResponseMessage'] == 'Sesion expirada':
-                        logging.warning(value_red_mas['ResponseMessage'])
+                        logging.warning('si fue sesion expirada')
+                        validation['error'] = 'sesion_expirada'
                     else:
                         validation['error'] = 'error'
-        logging.warning('VALIDATION')
+        logging.warning('VALIDATION send_redMas_information ---')
         logging.warning(validation)
         return validation
 
@@ -570,6 +591,7 @@ class PosOrder(models.Model):
             if len(dicc[0]) > 0:
                 if 'TransactionId' in dicc[0]:
                     if dicc[0]['TransactionId']:
+
                         order.transaccion_id = dicc[0]['TransactionId']
                     if dicc[0]['TransactionDate']:
                         order.transaccion_date = dicc[0]['TransactionDate']
@@ -596,6 +618,13 @@ class PosOrder(models.Model):
                         logging.warning('Entrando al iva comision :o')
                         logging.warning(float(dicc[0]['iva_comision']))
                         order.iva_comision = float(dicc[0]['iva_comision'])
+                    if 'amount_check_reference' in dicc[0] and dicc[0]['amount_check_reference']:
+                        if dicc[0]['amount_check_reference'] > 0:
+                            for linea in order.lines:
+                                linea.price_subtotal = dicc[0]['amount_check_reference']
+                                linea.price_subtotal_incl = dicc[0]['amount_check_reference']
+                                linea.price_unit = dicc[0]['amount_check_reference']
+                            order.amount_total = dicc[0]['amount_check_reference']
 
 
         return True
@@ -609,14 +638,17 @@ class PosOrder(models.Model):
         'reference3':'',
         'legal_info':'',
         'comision':0,
-        'iva_comision':0
+        'iva_comision':0,
+        'amount_check_reference':0
         }
         if name_order:
             orders = self.env['pos.order'].search([('pos_reference', '=', name_order[0])])
-
+            logging.warning('def Ticket_values(')
+            logging.warning(orders)
             if orders:
                 for order in orders:
                     logging.warning('Me llamaron desde una funcion para el ticket::::')
+                    logging.warning(order)
                     logging.warning(order.transaccion_id)
                     if order.transaccion_id:
                         dicc_values['transaccion_id']=order.transaccion_id
@@ -634,6 +666,7 @@ class PosOrder(models.Model):
                         dicc_values['comision'] = order.comision
                     if order.iva_comision:
                         dicc_values['iva_comision'] = order.iva_comision
+
         return dicc_values
 
     def get_balance_by_bag(self, config_id, number):
@@ -643,8 +676,10 @@ class PosOrder(models.Model):
         pos_order_get_balance_by = {}
         for pos_config_id in confi_pos_config_id:
             xml_json = pos_config_id.red_autentication('GetBalanceByBag', number[0])
-            if xml_json != False and 'BagId' in xml_json:
-                if xml_json:
+            logging.warning('Buscando error 1')
+            logging.warning(xml_json)
+            if xml_json:
+                if xml_json != False and 'BagId' in xml_json:
                     pos_order_get_balance_by['ResponseMessage'] = False
             else:
                 pos_order_get_balance_by['ResponseMessage'] = xml_json
@@ -804,6 +839,7 @@ class PosOrder(models.Model):
     def checkRedMas(self, config_id, product_dicc, number):
         logging.warning('CheckRedMas 1')
         logging.warning(config_id)
+        logging.warning('->')
         logging.warning(product_dicc)
         logging.warning(number)
         logging.warning('')
@@ -814,6 +850,8 @@ class PosOrder(models.Model):
         if config_id and number:
             logging.warning('checkRedMas 2')
             value_get_balance_by_bag = self.get_balance_by_bag(config_id, number)
+            logging.warning('')
+            logging.warning('=D')
             logging.warning(value_get_balance_by_bag)
             logging.warning('')
             logging.warning('')
@@ -822,6 +860,11 @@ class PosOrder(models.Model):
                 value_sale = self.sale(config_id, product_dicc)
                 logging.warning("DESPUES DE HACER SALE RESPUESTA")
                 logging.warning(value_sale)
+                if product_dicc and product_dicc[0] and 'amount_check_reference' in product_dicc[0]:
+                    logging.warning('type()')
+                    logging.warning(type(value_sale))
+                    if type(value_sale) != str:
+                        value_sale['amount_check_reference'] = product_dicc[0]['amount_check_reference']
                 if value_sale:
                     logging.warning('Si hay valor 1')
                     if "ResponseCode" in value_sale:
@@ -837,9 +880,14 @@ class PosOrder(models.Model):
                         }
                         if text['error'] == 'Sesion expirada':
                             logging.warning('Llamando a una nueva función ')
-                            self.validate_session(config_id, product_dicc)
-                            logging.warning('Sesion expirada')
-                            value_red_mas["ResponseMessage"]=value_sale
+                            new_value = self.validate_session(config_id, product_dicc)
+                            logging.warning('Sesion expirada ---- 0.o ')
+                            if new_value and 'ResponseCode' in new_value:
+                                if new_value['ResponseCode']:
+
+                                    value_red_mas=new_value
+                            else:
+                                value_red_mas["ResponseMessage"]=value_sale
                         else:
                             value_red_mas["ResponseMessage"]=value_sale
 
@@ -869,19 +917,25 @@ class PosOrder(models.Model):
         session.get_session()
         logging.warning('nueva session')
         logging.warning(session.sessionid)
+        new_session = session.sessionid
+        logging.warning(product_dicc)
+        logging.warning('')
+        logging.warning('')
+        logging.warning('')
+        if product_dicc:
+            if product_dicc[0]:
+                if 'session' in product_dicc[0]:
+                   product_dicc[0]['session'] = new_session
         value_sale = self.sale(config_id, product_dicc)
         logging.warning('que trajo ahora, pero en validate_session?')
         logging.warning(value_sale)
-        if value_sale == 'Sesion expirada':
-            logging.warning('OTRA VEZ')
-        while value_sale != 'Sesion expirada':
-            logging.warning('Repitiendoooo')
-            value_sale = self.sale(config_id, product_dicc)
-        # if value_sale:
-        #     if "ResponseCode" in value_sale:
-        #         value_red_mas=value_sale
+
         logging.warning('')
         logging.warning('')
         logging.warning('')
-        logging.warning('END ')
-        return True
+        logging.warning('END ->')
+        logging.warning(value_sale)
+        logging.warning('')
+        logging.warning('')
+        logging.warning('')
+        return value_sale

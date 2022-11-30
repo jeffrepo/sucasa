@@ -22,7 +22,7 @@ class SucasaRoute(http.Controller):
         data = {"code": 300, "message": "error"}
 
         if ("user" in json_data) and ("password" in json_data) and ("device_id" in json_data) and ("weight" in json_data):
-            if json_data["user"] == "arturo.gatica@avanguardiatech.com" and json_data["password"] =="odoo#123":
+            if json_data["user"] == "arturo.gatica@avanguardiatech.com" and json_data["password"] =="12345":
                 if int(json_data["device_id"]) > 0:
                     sucasa_weight_search = request.env["sucasa.productweight"].sudo().search([('device_id', '=', int(json_data["device_id"]))])
                     if len(sucasa_weight_search) > 0:

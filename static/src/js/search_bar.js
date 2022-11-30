@@ -20,4 +20,3 @@ odoo.define('sucasa.search_bar', function (require) {
     }
 });
 });
-
